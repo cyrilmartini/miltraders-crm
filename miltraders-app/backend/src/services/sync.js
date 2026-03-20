@@ -78,9 +78,8 @@ async function syncAccounts() {
           first_payout_target, buffer_lock, latent_loss_limit, account_category,
           review_status, purchase_date, updated_at
         )
-        VALUES ($1,$2,$3,$4,$5::integer,$6,$7::numeric,$8::numeric,$9::numeric,$10::numeric,$11::numeric,$12::numeric,
-                $13::numeric,$14::integer,$15,$16::numeric,$17::numeric,$18::numeric,$19::numeric,$20,
-                CASE WHEN $6 = 'PASSED' AND $9::numeric >= $10::numeric AND $10::numeric > 0 THEN 'PENDING_REVIEW' ELSE NULL END,
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
+                CASE WHEN $6::text = 'PASSED' AND CAST($9 AS numeric) >= CAST($10 AS numeric) AND CAST($10 AS numeric) > 0 THEN 'PENDING_REVIEW' ELSE NULL END,
                 $21,NOW())
         ON CONFLICT (volumetrica_account_id) DO UPDATE SET
           trader_id = EXCLUDED.trader_id,
@@ -100,27 +99,27 @@ async function syncAccounts() {
           END,
           updated_at = NOW()
       `, [
-        String(acc.accountId || acc.id),
-        traderId,
-        acc.header || acc.accountId,
-        type,
-        size,
-        status,
-        currentBalance,
-        currentBalance, // no equity field in API, use balance
-        profit,
-        profitTarget,
-        currentDrawdown,
-        rules.maxDrawdown,
-        type === "INSTANT" ? rules.dailyLimit : null,
-        consistencyThreshold,
-        rules.contractsMax,
-        rules.minDailyGain,
-        rules.profitTarget,
-        category === "FUNDED" ? rules.bufferLock : null,
-        rules.latentLossLimit,
-        category,
-        acc.creationDate || new Date(),
+        String(acc.accountId || acc.id),        // $1
+        traderId,                                // $2
+        acc.header || acc.accountId,             // $3
+        type,                                    // $4
+        Number(size),                            // $5 size (integer)
+        status,                                  // $6 status (text)
+        Number(currentBalance),                  // $7 balance
+        Number(currentBalance),                  // $8 equity
+        Number(profit),                          // $9 profit
+        profitTarget !== null ? Number(profitTarget) : null, // $10 profit_target
+        Number(currentDrawdown),                 // $11 current_drawdown
+        Number(rules.maxDrawdown),               // $12 max_drawdown
+        type === "INSTANT" ? Number(rules.dailyLimit) : null, // $13 daily_limit
+        Number(consistencyThreshold),            // $14 consistency_threshold
+        rules.contractsMax,                      // $15 contracts_max (text)
+        Number(rules.minDailyGain),              // $16 min_daily_gain
+        Number(rules.profitTarget),              // $17 first_payout_target
+        category === "FUNDED" ? Number(rules.bufferLock) : null, // $18 buffer_lock
+        Number(rules.latentLossLimit),           // $19 latent_loss_limit
+        category,                                // $20 account_category (text)
+        acc.creationDate || new Date(),          // $21 purchase_date
       ]);
 
     } catch (err) {
