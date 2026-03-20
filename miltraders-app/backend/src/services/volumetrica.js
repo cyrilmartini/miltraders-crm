@@ -27,10 +27,11 @@ async function createUser(userData) {
 
 // ─── Trading Accounts ─────────────────────────────────────────────────────────
 async function getTradingAccounts(params = {}) {
-  const res = await client.get("/tradingAccount", { params });
+  const res = await client.get("/TradingAccount/List", { params });
     console.log("[VOL] tradingAccounts response:", JSON.stringify(res.data).substring(0, 500));
   if (!res.data.success) throw new Error(res.data.message || "Failed to get accounts");
-  return res.data.data;
+    const data = res.data.data;
+      return Array.isArray(data) ? data : (data.items || data.accounts || [data]);
 }
 
 async function getTradingAccount(accountId) {
