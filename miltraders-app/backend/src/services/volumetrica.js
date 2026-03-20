@@ -2,12 +2,15 @@ const axios = require("axios");
 
 const BASE_URL = process.env.VOLUMETRICA_API_URL || "https://dxfeed.volumetricaprop.com";
 const API_KEY = process.env.VOLUMETRICA_API_KEY;
+console.log("[VOL] Config - URL:", BASE_URL, "API_KEY set:", !!API_KEY, "key length:", API_KEY ? API_KEY.length : 0);
 
 const client = axios.create({
   baseURL: `${BASE_URL}/api/v2/propsite`,
   headers: { "x-api-key": API_KEY, "Content-Type": "application/json" },
   timeout: 15000,
 });
+
+client.interceptors.response.use(r => r, err => { console.error("[VOL] API Error:", err.response ? err.response.status + " " + JSON.stringify(err.response.data).substring(0, 500) : err.message); return Promise.reject(err); });
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 async function getUsers(params = {}) {
@@ -25,6 +28,7 @@ async function createUser(userData) {
 // ─── Trading Accounts ─────────────────────────────────────────────────────────
 async function getTradingAccounts(params = {}) {
   const res = await client.get("/tradingAccount", { params });
+    console.log("[VOL] tradingAccounts response:", JSON.stringify(res.data).substring(0, 500));
   if (!res.data.success) throw new Error(res.data.message || "Failed to get accounts");
   return res.data.data;
 }
