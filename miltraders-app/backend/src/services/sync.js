@@ -1,7 +1,7 @@
 const db = require("../db");
 const vol = require("./volumetrica");
 
-// âââ MILTRADERS rules by size âââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── MILTRADERS rules by size ─────────────────────────────────────────────────
 const RULES = {
   50000:  { profitTarget: 3000, maxDrawdown: 2000, dailyLimit: 1200, minDailyGain: 100, bufferLock: 2100, latentLossLimit: 600, contractsMax: "4/40" },
   100000: { profitTarget: 6000, maxDrawdown: 3000, dailyLimit: 2250, minDailyGain: 200, bufferLock: 3100, latentLossLimit: 900, contractsMax: "8/80" },
@@ -35,8 +35,10 @@ async function syncAccounts() {
       let category = "EVAL";
       if (type === "INSTANT") category = "INSTANT";
       else if (rulePhase === "FUNDED") category = "FUNDED";
-      else if (status === "FUNDED" || acc.mode === 2) category = "FUNDED";
+      else if (acc.mode === 2) category = "FUNDED";
       else if (acc.mode === 1) category = "SIM_FUNDED";
+      // Note: status "FUNDED" (Volumetrica Enabled=1) no longer overrides category.
+      // Active eval accounts have status=FUNDED but keep category=EVAL.
 
       const consistencyThreshold = type === "INSTANT" ? 20 : 30;
       const profitTarget = category === "EVAL" ? rules.profitTarget : null;
@@ -45,7 +47,7 @@ async function syncAccounts() {
       const profit = currentBalance - startBal;
       const currentDrawdown = Math.max(0, startBal - currentBalance);
 
-      // 4. Upsert trader â using ownerUser or ownerAppUserId
+      // 4. Upsert trader — using ownerUser or ownerAppUserId
       const userId = acc.ownerAppUserId || acc.ownerUser?.userId || acc.ownerOrganizationUserId || "unknown";
       const userEmail = acc.ownerUser?.email || acc.ownerUser?.username || "";
       const userName = acc.ownerUser?.fullName || "Unknown Trader";
