@@ -37,8 +37,8 @@ async function syncAccounts() {
       else if (rulePhase === "FUNDED") category = "FUNDED";
       else if (acc.mode === 2) category = "FUNDED";
       else if (acc.mode === 1) category = "SIM_FUNDED";
-      // Note: status "FUNDED" (Volumetrica Enabled=1) no longer overrides category.
-      // Active eval accounts have status=FUNDED but keep category=EVAL.
+      // Note: status "ACTIVE" (Volumetrica Enabled=1) no longer overrides category.
+      // Active eval accounts have status=ACTIVE and keep category=EVAL.
 
       const consistencyThreshold = type === "INSTANT" ? 20 : 30;
       const profitTarget = category === "EVAL" ? rules.profitTarget : null;

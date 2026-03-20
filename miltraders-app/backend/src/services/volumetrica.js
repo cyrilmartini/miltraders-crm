@@ -74,7 +74,7 @@ async function getTradingRules() {
 function mapAccountStatus(volumetricaStatus) {
   const map = {
     0: "INITIALIZED",
-    1: "FUNDED",           // Enabled = active funded
+    1: "ACTIVE",            // Enabled = account is active (trading)
     2: "PASSED",           // ChallengeSuccess
     4: "FAILED",           // ChallengeFailed
     8: "DISABLED",

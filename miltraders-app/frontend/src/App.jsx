@@ -619,8 +619,8 @@ function Sidebar({ page, setPage }) {
 // ─── OVERVIEW ─────────────────────────────────────────────────────────────────
 function Overview({ setPage }) {
   const allAccounts = TRADERS.flatMap(t => t.accounts);
-  const funded = allAccounts.filter(a => a.status === "FUNDED" && a.accountCategory === "FUNDED").length;
-  const activeEval = allAccounts.filter(a => a.status === "FUNDED" && a.accountCategory === "EVAL").length;
+  const funded = allAccounts.filter(a => a.status === "ACTIVE" && a.accountCategory === "FUNDED").length;
+  const activeEval = allAccounts.filter(a => a.status === "ACTIVE" && a.accountCategory === "EVAL").length;
   const pendingReview = allAccounts.filter(a => a.status === "PASSED").length;
   const failed = allAccounts.filter(a => a.status === "FAILED").length;
   const totalWithdrawn = TRADERS.reduce((a, t) => a + t.totalWithdrawn, 0);
@@ -722,8 +722,8 @@ function Overview({ setPage }) {
           <div style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Pass Rate</div>
           {(() => {
             // Pass rate = accounts that completed eval (passed or failed), excluding still-active
-            const completed = allAccounts.filter(a => a.status === "PASSED" || a.status === "FAILED" || (a.status === "FUNDED" && a.accountCategory === "FUNDED"));
-            const passed = completed.filter(a => a.status === "PASSED" || (a.status === "FUNDED" && a.accountCategory === "FUNDED"));
+            const completed = allAccounts.filter(a => a.status === "PASSED" || a.status === "FAILED" || (a.status === "ACTIVE" && a.accountCategory === "FUNDED"));
+            const passed = completed.filter(a => a.status === "PASSED" || (a.status === "ACTIVE" && a.accountCategory === "FUNDED"));
             const rate = completed.length > 0 ? Math.round((passed.length / completed.length) * 100) : 0;
             return (
               <div style={{ textAlign: "center", padding: "12px 0" }}>
@@ -749,9 +749,9 @@ function Overview({ setPage }) {
           {(() => {
             const all = TRADERS.flatMap(t => t.accounts);
             const rows = [
-              { label: "Funded", count: all.filter(a => a.status === "FUNDED" && a.accountCategory === "FUNDED").length, color: "var(--green)" },
+              { label: "Funded", count: all.filter(a => a.status === "ACTIVE" && a.accountCategory === "FUNDED").length, color: "var(--green)" },
               { label: "In Review", count: all.filter(a => a.status === "PASSED").length, color: "var(--orange)" },
-              { label: "Active Eval", count: all.filter(a => a.status === "FUNDED" && a.accountCategory === "EVAL").length, color: "var(--blue)" },
+              { label: "Active Eval", count: all.filter(a => a.status === "ACTIVE" && a.accountCategory === "EVAL").length, color: "var(--blue)" },
               { label: "Failed", count: all.filter(a => a.status === "FAILED").length, color: "var(--red)" },
             ];
             return (
@@ -1214,8 +1214,9 @@ function Payouts() {
 // ─── TRADERS PAGE ─────────────────────────────────────────────────────────────
 function TraderProfile({ trader, onBack }) {
   const [tab, setTab] = useState("accounts");
+  const [acctFilter, setAcctFilter] = useState("ALL");
   const totalWithdrawn = trader.totalWithdrawn;
-  const funded = trader.accounts.filter(a => a.status === "FUNDED" && a.accountCategory === "FUNDED").length;
+  const funded = trader.accounts.filter(a => a.status === "ACTIVE" && a.accountCategory === "FUNDED").length;
 
   return (
     <div className="fade-in">
@@ -1262,32 +1263,55 @@ function TraderProfile({ trader, onBack }) {
       </div>
 
       {/* Tab: Accounts */}
-      {tab === "accounts" && (
-        <div className="fade-in" style={{ background: "var(--bg1)", border: "1px solid var(--border)", overflow: "hidden" }}>
+      {tab === "accounts" && (() => {
+        const acctFilters = [
+          { id: "ALL", label: "All", count: trader.accounts.length },
+          { id: "IN_CHALLENGE", label: "In Challenge", count: trader.accounts.filter(a => a.status === "ACTIVE" && a.accountCategory === "EVAL").length },
+          { id: "CHALLENGE_PASSED", label: "Challenge Passed", count: trader.accounts.filter(a => a.status === "PASSED" && a.accountCategory === "EVAL").length },
+          { id: "CHALLENGE_FAILED", label: "Challenge Failed", count: trader.accounts.filter(a => a.status === "FAILED").length },
+          { id: "FUNDED", label: "Funded Accounts", count: trader.accounts.filter(a => a.accountCategory === "FUNDED").length },
+        ];
+        let filtered = trader.accounts;
+        if (acctFilter === "IN_CHALLENGE") filtered = trader.accounts.filter(a => a.status === "ACTIVE" && a.accountCategory === "EVAL");
+        else if (acctFilter === "CHALLENGE_PASSED") filtered = trader.accounts.filter(a => a.status === "PASSED" && a.accountCategory === "EVAL");
+        else if (acctFilter === "CHALLENGE_FAILED") filtered = trader.accounts.filter(a => a.status === "FAILED");
+        else if (acctFilter === "FUNDED") filtered = trader.accounts.filter(a => a.accountCategory === "FUNDED");
+        return (
+        <div className="fade-in">
+          {/* Account sub-filters */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+            {acctFilters.map(f => (
+              <button key={f.id} onClick={() => setAcctFilter(f.id)} style={{
+                ...MONO, fontSize: 10, padding: "6px 14px", borderRadius: 2, border: "1px solid " + (acctFilter === f.id ? "var(--gold)" : "var(--border)"),
+                background: acctFilter === f.id ? "rgba(234,179,8,0.08)" : "var(--bg2)", color: acctFilter === f.id ? "var(--gold)" : "var(--text3)",
+                letterSpacing: "0.05em", transition: "all 0.15s"
+              }}>
+                {f.label} <span style={{ opacity: 0.6, marginLeft: 4 }}>{f.count}</span>
+              </button>
+            ))}
+          </div>
+          {filtered.length === 0 ? (
+            <div style={{ color: "var(--text3)", fontSize: 13, padding: "30px 0", textAlign: "center" }}>No accounts in this category.</div>
+          ) : (
+          <div style={{ background: "var(--bg1)", border: "1px solid var(--border)", overflow: "hidden" }}>
           <table style={{ width: "100%" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Account ID", "Type", "Size", "Status", "P&L", "Target", "Days", "Consistency", "Drawdown $", "Scalping", "Purchased"].map(h => (
+                {["Account ID", "Type", "Category", "Size", "Status", "P&L", "Target", "Drawdown $", "Purchased"].map(h => (
                   <th key={h} style={{ ...MONO, fontSize: 9, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.06em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {trader.accounts.map((a, i) => (
-                <tr key={a.id} className="hover-row" style={{ borderBottom: i < trader.accounts.length - 1 ? "1px solid var(--border)" : "none" }}>
+              {filtered.map((a, i) => (
+                <tr key={a.id} className="hover-row" style={{ borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none" }}>
                   <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 14px" }}>{a.id}</td>
                   <td style={{ padding: "12px 14px" }}><Badge label={a.type} /></td>
+                  <td style={{ padding: "12px 14px" }}><Badge label={a.accountCategory === "FUNDED" ? "FUNDED" : "EVAL"} /></td>
                   <td style={{ ...MONO, fontSize: 11, color: "var(--gold)", padding: "12px 14px" }}>${a.size.toLocaleString()}</td>
                   <td style={{ padding: "12px 14px" }}><Badge label={a.status} /></td>
                   <td style={{ ...MONO, fontSize: 11, color: a.profit >= 0 ? "var(--green)" : "var(--red)", padding: "12px 14px" }}>${a.profit.toLocaleString()}</td>
                   <td style={{ ...MONO, fontSize: 11, color: a.profitTarget ? (a.profit >= a.profitTarget ? "var(--green)" : "var(--orange)") : "var(--text3)", padding: "12px 14px" }}>{a.profitTarget ? "$" + a.profitTarget.toLocaleString() : "—"}</td>
-                  <td style={{ ...MONO, fontSize: 11, color: a.days >= 5 ? "var(--green)" : "var(--red)", padding: "12px 14px" }}>{a.days}</td>
-                  <td style={{ padding: "12px 14px", minWidth: 100 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ ...MONO, fontSize: 11, color: a.consistency >= 30 ? "var(--green)" : "var(--red)", minWidth: 34 }}>{a.consistency}%</span>
-                      <div style={{ flex: 1 }}><ProgressBar value={a.consistency} max={100} color="var(--green)" height={3} /></div>
-                    </div>
-                  </td>
                   <td style={{ padding: "12px 14px", minWidth: 120 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ ...MONO, fontSize: 10, color: a.currentDrawdown <= a.maxDrawdown ? "var(--green)" : "var(--red)", minWidth: 50 }}>${a.currentDrawdown.toLocaleString()}</span>
@@ -1295,14 +1319,16 @@ function TraderProfile({ trader, onBack }) {
                       <span style={{ ...MONO, fontSize: 9, color: "var(--text3)" }}>/${a.maxDrawdown.toLocaleString()}</span>
                     </div>
                   </td>
-                  <td style={{ ...MONO, fontSize: 11, color: a.scalping <= 40 ? "var(--text2)" : "var(--red)", padding: "12px 14px" }}>{a.scalping}%</td>
                   <td style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "12px 14px", whiteSpace: "nowrap" }}>{a.purchaseDate}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
+          )}
         </div>
-      )}
+        );
+      })()}
 
       {/* Tab: Payouts */}
       {tab === "payouts" && (
@@ -1415,7 +1441,7 @@ function TradersPage() {
     t.email.toLowerCase().includes(search.toLowerCase()) ||
     t.id.toLowerCase().includes(search.toLowerCase())
   );
-  if (filter === "FUNDED") list = list.filter(t => t.accounts.some(a => a.status === "FUNDED" && a.accountCategory === "FUNDED"));
+  if (filter === "FUNDED") list = list.filter(t => t.accounts.some(a => a.status === "ACTIVE" && a.accountCategory === "FUNDED"));
   if (filter === "PENDING") list = list.filter(t => t.accounts.some(a => a.status === "PASSED") || t.pendingPayout);
   if (filter === "KYC_PENDING") list = list.filter(t => kycStates[t.id] !== "VERIFIED");
   if (sort === "withdrawn") list = [...list].sort((a, b) => b.totalWithdrawn - a.totalWithdrawn);
@@ -1427,7 +1453,7 @@ function TradersPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>TRADERS</div>
-          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.length} registered · {TRADERS.filter(t => t.accounts.some(a => a.status === "FUNDED" && a.accountCategory === "FUNDED")).length} funded · {Object.values(kycStates).filter(v => v !== "VERIFIED").length} KYC pending</div>
+          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.length} registered · {TRADERS.filter(t => t.accounts.some(a => a.status === "ACTIVE" && a.accountCategory === "FUNDED")).length} funded · {Object.values(kycStates).filter(v => v !== "VERIFIED").length} KYC pending</div>
         </div>
         <div style={{ flex: 1 }} />
         <input placeholder="Search name, email, ID…" value={search} onChange={e => setSearch(e.target.value)}

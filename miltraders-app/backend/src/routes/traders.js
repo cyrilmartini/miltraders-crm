@@ -29,7 +29,7 @@ router.get("/", auth, async (req, res) => {
       params.push(`%${search}%`);
       conditions.push(`(t.name ILIKE $${params.length} OR t.email ILIKE $${params.length} OR t.volumetrica_user_id ILIKE $${params.length})`);
     }
-    if (filter === "FUNDED") conditions.push(`EXISTS (SELECT 1 FROM accounts WHERE trader_id = t.id AND status = 'FUNDED')`);
+    if (filter === "FUNDED") conditions.push(`EXISTS (SELECT 1 FROM accounts WHERE trader_id = t.id AND status = 'ACTIVE' AND account_category = 'FUNDED')`);
     if (filter === "PENDING") conditions.push(`EXISTS (SELECT 1 FROM accounts WHERE trader_id = t.id AND status = 'PENDING_REVIEW')`);
     if (filter === "KYC_PENDING") conditions.push(`t.kyc_status != 'VERIFIED'`);
 
