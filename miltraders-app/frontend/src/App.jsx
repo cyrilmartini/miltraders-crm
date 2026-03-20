@@ -15,7 +15,7 @@ const GLOBAL_CSS = `
   --bg4: #172033;
   --border: #1a2238;
   --border2: #243050;
-  --gold: #b8922a;
+  --gold: #b8922a;h
   --gold2: #d4aa42;
   --gold-dim: #6b5218;
   --gold-glow: rgba(184,146,42,0.07);
@@ -376,9 +376,17 @@ function Login({ onLogin }) {
 
   const submit = async () => {
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    setLoading(false);
-    onLogin();
+    setErr("");
+    try {
+      const res = await authApi.login(email, pass);
+      const token = res?.data?.token || res?.token;
+      if (token) localStorage.setItem("mt_token", token);
+      setLoading(false);
+      onLogin();
+    } catch (e) {
+      setLoading(false);
+      setErr(e?.message || "Login failed");
+    }
   };
 
   return (
@@ -1757,11 +1765,95 @@ const PAGE_TITLES = {
 export default function App() {
   const [auth, setAuth] = useState(false);
   const [page, setPage] = useState("overview");
+  const [loading, setLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [tradersRes, accountsRes] = await Promise.all([
+        tradersApi.list(),
+        accountsApi.list(),
+      ]);
+
+      const tradersList = tradersRes?.data || [];
+      const accountsList = accountsRes?.data || [];
+
+      const accountsByTrader = {};
+      for (const acc of accountsList) {
+        const tid = acc.trader_id;
+        if (!accountsByTrader[tid]) accountsByTrader[tid] = [];
+        accountsByTrader[tid].push({
+          id: acc.account_ref || acc.volumetrica_account_id,
+          volumetricaId: acc.volumetrica_account_id,
+          type: acc.type || "CHALLENGE",
+          size: acc.size || 50000,
+          status: acc.status || "UNKNOWN",
+          accountCategory: acc.account_category || "EVAL",
+          balance: acc.balance || acc.size || 50000,
+          equity: acc.equity || acc.balance || acc.size || 50000,
+          profit: acc.profit || 0,
+          profitTarget: acc.profit_target || null,
+          currentDrawdown: acc.current_drawdown || 0,
+          maxDrawdown: acc.max_drawdown || 2000,
+          dailyLimit: acc.daily_limit || null,
+          consistencyThreshold: acc.consistency_threshold || 30,
+          contractsMax: acc.contracts_max || "—",
+          minDailyGain: acc.min_daily_gain || 100,
+          firstPayoutTarget: acc.first_payout_target || null,
+          bufferLock: acc.buffer_lock || null,
+          latentLossLimit: acc.latent_loss_limit || null,
+          consistency: 0, scalping: 0, flipping: false,
+          qualifyingDays: 0, cycleDays: 0, days: 0, latentLoss: 0,
+          purchaseDate: acc.purchase_date,
+        });
+      }
+
+      TRADERS = tradersList.map(t => ({
+        id: String(t.id),
+        volumetricaUserId: t.volumetrica_user_id,
+        name: t.name || "Unknown",
+        email: t.email || "",
+        country: t.country || "",
+        kyc: t.kyc_status || "PENDING",
+        joined: t.joined_at || new Date().toISOString(),
+        affiliate: t.affiliate || "",
+        accounts: accountsByTrader[t.id] || [],
+        totalWithdrawn: parseFloat(t.total_withdrawn) || 0,
+        pendingPayout: null,
+        payouts: [],
+        activity: [],
+      }));
+
+      console.log("[APP] Loaded", TRADERS.length, "traders,", accountsList.length, "accounts");
+    } catch (err) {
+      console.error("[APP] Failed to load data:", err);
+      TRADERS = [];
+    }
+    setLoading(false);
+    setDataLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (auth && !dataLoaded) loadData();
+  }, [auth, dataLoaded, loadData]);
 
   if (!auth) return (
     <>
       <style>{GLOBAL_CSS}</style>
       <Login onLogin={() => setAuth(true)} />
+    </>
+  );
+
+  if (loading || !dataLoaded) return (
+    <>
+      <style>{GLOBAL_CSS}</style>
+      <div style={{ minHeight: "100vh", background: "var(--bg0)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 22, fontWeight: 700, letterSpacing: "0.12em", color: "var(--gold)", marginBottom: 16 }}>MILTRADERS</div>
+          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "var(--text3)", letterSpacing: "0.1em" }}>LOADING DATA...</div>
+        </div>
+      </div>
     </>
   );
 
@@ -1771,7 +1863,7 @@ export default function App() {
       <div style={{ display: "flex", background: "var(--bg0)", minHeight: "100vh" }}>
         <Sidebar page={page} setPage={setPage} />
         <div className="main-content" style={{ marginLeft: 210, flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-          <Topbar pageTitle={PAGE_TITLES[page]} onLogout={() => setAuth(false)} setPage={setPage} />
+          <Topbar pageTitle={PAGE_TITLES[page]} onLogout={() => { setAuth(false); setDataLoaded(false); TRADERS = []; }} setPage={setPage} />
           <main style={{ flex: 1, padding: "24px 32px", overflowY: "auto" }}>
             <div key={page} className="page-enter">
               {page === "overview" && <Overview setPage={setPage} />}
