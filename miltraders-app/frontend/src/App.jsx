@@ -150,7 +150,22 @@ table { border-collapse: collapse; }
   .kpi-grid > div { min-width: 100% !important; }
   .checks-grid { grid-template-columns: 1fr 1fr !important; }
 }
-.mobile-nav { display: none; }
+/* Spacing & sizing overrides */
+  .nav-btn { padding: 12px 20px !important; font-size: 15px !important; margin-bottom: 4px !important; border-radius: 8px !important; }
+  .sidebar { padding: 18px 14px !important; }
+  .sidebar nav { display: flex !important; flex-direction: column !important; gap: 4px !important; }
+  .topbar { padding: 16px 28px !important; }
+  .kpi-grid { gap: 20px !important; margin-bottom: 24px !important; }
+  .kpi-grid > div { padding: 22px !important; }
+  .charts-grid { gap: 20px !important; margin-bottom: 24px !important; }
+  .charts-grid > div { padding: 22px !important; }
+  .middle-row { gap: 20px !important; margin-bottom: 24px !important; }
+  .middle-row > div { padding: 22px !important; }
+  th, td { padding: 12px 16px !important; }
+  h2, h3 { margin-bottom: 16px !important; }
+  table { margin-top: 8px !important; }
+  select, input, button { font-size: 14px !important; }
+  .mobile-nav { display: none; }
 
 /* Noise texture overlay */
 body::before {
