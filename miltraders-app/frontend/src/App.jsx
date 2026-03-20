@@ -633,7 +633,8 @@ function Overview({ setPage }) {
     { label: "PRO", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "EVAL").length, color: "var(--gold)" },
     { label: "PRO FUNDED", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "FUNDED").length, color: "#22d3ee" },
     { label: "INSTANT", value: allAccounts.filter(a => a.type === "INSTANT").length, color: "var(--blue)" },
-  ];
+    { label: "FAILED", value: allAccounts.filter(a => a.accountCategory === "FAILED").length, color: "var(--red)" },
+  ].filter(t => t.value > 0);
 
   const recentActivity = TRADERS.flatMap(t =>
     t.activity.map(a => ({ ...a, trader: t.name }))
@@ -1847,10 +1848,23 @@ const PAGE_TITLES = {
 };
 
 export default function App() {
-  const [auth, setAuth] = useState(false);
+  const [auth, setAuth] = useState(!!localStorage.getItem("mt_token"));
   const [page, setPage] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Auto-validate stored token on startup
+  useEffect(() => {
+    const token = localStorage.getItem("mt_token");
+    if (token) {
+      authApi.me().then(() => {
+        setAuth(true);
+      }).catch(() => {
+        localStorage.removeItem("mt_token");
+        setAuth(false);
+      });
+    }
+  }, []);
 
   // Load real data from backend after login
   const loadData = useCallback(async () => {
@@ -1955,7 +1969,7 @@ export default function App() {
       <div style={{ display: "flex", background: "var(--bg0)", minHeight: "100vh" }}>
         <Sidebar page={page} setPage={setPage} />
         <div className="main-content" style={{ marginLeft: 210, flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-          <Topbar pageTitle={PAGE_TITLES[page]} onLogout={() => { setAuth(false); setDataLoaded(false); TRADERS = []; }} setPage={setPage} />
+          <Topbar pageTitle={PAGE_TITLES[page]} onLogout={() => { localStorage.removeItem("mt_token"); setAuth(false); setDataLoaded(false); TRADERS = []; }} setPage={setPage} />
           <main style={{ flex: 1, padding: "24px 32px", overflowY: "auto" }}>
             <div key={page} className="page-enter">
               {page === "overview" && <Overview setPage={setPage} />}

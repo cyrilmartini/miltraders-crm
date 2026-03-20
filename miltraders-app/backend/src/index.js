@@ -29,7 +29,7 @@ app.use("/api/webhook", webhookRoutes);
 app.get("/api/health", (req, res) => res.json({ status: "ok", time: new Date() }));
 
 // ─── Sync cron — every 5 minutes ─────────────────────────────────────────────
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("*/2 * * * *", async () => {
   try {
     await syncService.syncAccounts();
     console.log("[CRON] Accounts synced");

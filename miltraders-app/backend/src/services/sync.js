@@ -39,6 +39,8 @@ async function syncAccounts() {
       else if (acc.mode === 1) category = "SIM_FUNDED";
       // Note: status "ACTIVE" (Volumetrica Enabled=1) no longer overrides category.
       // Active eval accounts have status=ACTIVE and keep category=EVAL.
+      // Failed accounts get their own category for clear lifecycle tracking
+      if (status === "FAILED") category = "FAILED";
 
       const consistencyThreshold = type === "INSTANT" ? 20 : 30;
       const profitTarget = category === "EVAL" ? rules.profitTarget : null;
