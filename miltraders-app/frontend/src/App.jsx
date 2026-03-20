@@ -615,7 +615,7 @@ function Sidebar({ page, setPage }) {
 
       {/* Version */}
       <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)" }}>
-        <div style={{ ...MONO, fontSize: 12, color: "var(--text3)" }}>v1.0.0 · Mock Data Mode</div>
+        <div style={{ ...MONO, fontSize: 12, color: "var(--text3)" }}>v1.0.0 · Production</div>
       </div>
     </aside>
   );

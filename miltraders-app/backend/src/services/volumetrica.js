@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = process.env.VOLUMETRICA_API_URL || "https://dxfeed.volumetricatrading.com";
+const BASE_URL = process.env.VOLUMETRICA_API_URL || "https://dxfeed.volumetricaprop.com";
 const API_KEY = process.env.VOLUMETRICA_API_KEY;
 
 const client = axios.create({
