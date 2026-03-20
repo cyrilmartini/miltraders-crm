@@ -628,8 +628,10 @@ function Overview({ setPage }) {
   const totalTraders = TRADERS.length;
 
   const typeBreakdown = [
-    { label: "CHALLENGE", value: allAccounts.filter(a => a.type === "CHALLENGE").length, color: "var(--purple)" },
-    { label: "PRO", value: allAccounts.filter(a => a.type === "PRO").length, color: "var(--gold)" },
+    { label: "CHALLENGE", value: allAccounts.filter(a => a.type === "CHALLENGE" && a.accountCategory === "EVAL").length, color: "var(--purple)" },
+    { label: "CHALLENGE FUNDED", value: allAccounts.filter(a => a.type === "CHALLENGE" && a.accountCategory === "FUNDED").length, color: "var(--green)" },
+    { label: "PRO", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "EVAL").length, color: "var(--gold)" },
+    { label: "PRO FUNDED", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "FUNDED").length, color: "#22d3ee" },
     { label: "INSTANT", value: allAccounts.filter(a => a.type === "INSTANT").length, color: "var(--blue)" },
   ];
 

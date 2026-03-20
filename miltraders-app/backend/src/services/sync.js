@@ -139,9 +139,12 @@ function detectTypeFromRule(ruleName) {
 }
 
 // Detect if account is EVAL or FUNDED from rule name
+// TTS naming: "Phase 1" = eval, "Live" = funded
 function detectPhaseFromRule(ruleName) {
   const upper = ruleName.toUpperCase();
   if (upper.includes("FUND")) return "FUNDED";
+  if (upper.includes("LIVE")) return "FUNDED";
+  if (upper.includes("PHASE")) return "EVAL"; // explicit "Phase 1" = eval
   return "EVAL";
 }
 
