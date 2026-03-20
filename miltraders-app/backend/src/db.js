@@ -62,6 +62,9 @@ async function init() {
         flipping_detected BOOLEAN DEFAULT false,
         fraud_flag BOOLEAN DEFAULT false,
         account_category VARCHAR(20),
+        review_status VARCHAR(30) DEFAULT NULL,
+        reviewed_at TIMESTAMP,
+        review_notes TEXT,
         purchase_date DATE,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
@@ -99,6 +102,14 @@ async function init() {
         details JSONB,
         created_at TIMESTAMP DEFAULT NOW()
       );
+
+      -- Add review columns if missing (safe for existing deployments)
+      DO $$ BEGIN
+        ALTER TABLE accounts ADD COLUMN IF NOT EXISTS review_status VARCHAR(30) DEFAULT NULL;
+        ALTER TABLE accounts ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP;
+        ALTER TABLE accounts ADD COLUMN IF NOT EXISTS review_notes TEXT;
+      EXCEPTION WHEN others THEN NULL;
+      END $$;
 
       -- Insert default admin if not exists
       INSERT INTO admin_users (email, password_hash, name)

@@ -792,10 +792,11 @@ function Overview({ setPage }) {
 }
 
 // ─── REVIEWS PAGE ─────────────────────────────────────────────────────────────
-function ReviewCard({ account, trader }) {
+function ReviewCard({ account, trader, onAction }) {
   const [expanded, setExpanded] = useState(false);
   const [modal, setModal] = useState(false);
   const [verdict, setVerdict] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // ── MILTRADERS full rule logic ──
   const isEval = account.accountCategory === "EVAL";
@@ -804,53 +805,75 @@ function ReviewCard({ account, trader }) {
   const consistencyThreshold = account.consistencyThreshold || (isInstant ? 20 : 30);
   const profitTargetOk = account.profitTarget ? account.profit >= account.profitTarget : true;
   const drawdownOk = account.currentDrawdown <= account.maxDrawdown;
-  const qualifyingDaysOk = (account.qualifyingDays || account.days) >= 5;
-  const cycleDaysOk = (account.cycleDays || account.days) >= (isEval ? 2 : 7);
-  const consistencyOk = account.consistency < consistencyThreshold;
   const scalpingFlag = account.scalping > 40; // INFO only, does not block
-  const latentLossOk = !account.latentLoss || account.latentLoss <= (account.latentLossLimit || 999999);
 
-  // EVAL checks (Challenge/Pro evaluation phase)
+  // EVAL checks — 5 checks matching the Claude project rules
   const evalChecks = [
-    { label: "Profit target", value: "$" + account.profit.toLocaleString(), ok: profitTargetOk, required: account.profitTarget ? "$" + account.profitTarget.toLocaleString() : "N/A", blocking: true },
-    { label: "Min trading days", value: (account.cycleDays || account.days) + " jours", ok: cycleDaysOk, required: "≥ 2 jours", blocking: false },
-    { label: "Max drawdown", value: "$" + account.currentDrawdown.toLocaleString(), ok: drawdownOk, required: "≤ $" + account.maxDrawdown.toLocaleString(), blocking: true },
-    { label: "Consistency", value: account.consistency + "%", ok: consistencyOk, required: "< " + consistencyThreshold + "%", blocking: false },
-    { label: "Micro-scalping", value: account.scalping + "%", ok: !scalpingFlag, required: "≤ 40% (info)", blocking: false, infoOnly: true },
-    { label: "Flipping", value: account.flipping ? "Détecté" : "Aucun", ok: !account.flipping, required: "Aucun (info)", blocking: false, infoOnly: true },
+    { label: "Profit target", value: "$" + (account.profit || 0).toLocaleString(), ok: profitTargetOk, required: account.profitTarget ? "$" + account.profitTarget.toLocaleString() : "N/A", blocking: true },
+    { label: "Max drawdown", value: "$" + (account.currentDrawdown || 0).toLocaleString(), ok: drawdownOk, required: account.maxDrawdown ? "≤ $" + account.maxDrawdown.toLocaleString() : "N/A", blocking: true },
+    { label: "Min trading days", value: "Via TTS", ok: null, required: "≥ 2 jours", blocking: false, needsManual: true },
+    { label: "Max contracts", value: account.contractsMax || "—", ok: null, required: "Voir TTS", blocking: false, needsManual: true },
+    { label: "Consistency (≤50%)", value: "Via TTS", ok: null, required: "Best day < 50% profit", blocking: false, needsManual: true },
   ];
 
-  // FUNDED/INSTANT checks (payout validation — 6 checks)
-  const payoutChecks = [
-    { label: "Check 1 — Payout target", value: "$" + account.profit.toLocaleString(), ok: profitTargetOk, required: account.firstPayoutTarget ? "Atteindre $" + account.firstPayoutTarget.toLocaleString() : "N/A (déjà fait)", blocking: true, note: "1er payout uniquement" },
-    { label: "Check 2 — Jours cycle", value: (account.cycleDays || account.days) + " jours", ok: cycleDaysOk, required: "≥ 7 jours", blocking: false },
-    { label: "Check 3 — Qualifying days", value: (account.qualifyingDays || 0) + " jours", ok: qualifyingDaysOk, required: "≥ 5 jours (PnL ≥ $" + (account.minDailyGain || 100) + "/j)", blocking: false },
-    { label: "Check 4 — Flipping", value: account.flipping ? "Détecté" : "Aucun", ok: true, required: "Info seulement", blocking: false, infoOnly: true },
-    { label: "Check 5 — Consistency", value: account.consistency + "%", ok: consistencyOk, required: "< " + consistencyThreshold + "% du profit cycle", blocking: false },
-    { label: "Check 6 — Latent loss", value: account.latentLoss ? "$" + account.latentLoss.toLocaleString() : "$0", ok: latentLossOk, required: "≤ 30% du DD max ($" + (account.latentLossLimit || "—") + ")", blocking: false },
-    { label: "Max drawdown", value: "$" + account.currentDrawdown.toLocaleString(), ok: drawdownOk, required: "≤ $" + account.maxDrawdown.toLocaleString(), blocking: true },
-    { label: "Micro-scalping", value: account.scalping + "%", ok: true, required: "Info seulement (>40%)", blocking: false, infoOnly: scalpingFlag },
-  ];
+  const checks = evalChecks;
+  const blockingFails = checks.filter(c => c.ok === false && c.blocking);
+  const manualChecks = checks.filter(c => c.ok === null);
+  const autoOk = blockingFails.length === 0;
 
-  const checks = isEval ? evalChecks : payoutChecks;
-  const blockingFails = checks.filter(c => !c.ok && c.blocking);
-  const softFails = checks.filter(c => !c.ok && !c.blocking && !c.infoOnly);
-  const allOk = blockingFails.length === 0 && softFails.length === 0;
+  // API action handlers
+  const handleValidate = async () => {
+    setActionLoading(true);
+    try {
+      await accountsApi.validate(account.dbId);
+      setVerdict({ type: "APPROVED" });
+      if (onAction) onAction();
+    } catch (err) {
+      alert("Erreur: " + (err.message || "Validation failed"));
+    }
+    setActionLoading(false);
+  };
+
+  const handleRefuse = async (reasons, note) => {
+    setActionLoading(true);
+    try {
+      await accountsApi.refuse(account.dbId, { reasons, note });
+      setVerdict({ type: "REFUSED", reasons, note });
+      if (onAction) onAction();
+    } catch (err) {
+      alert("Erreur: " + (err.message || "Refusal failed"));
+    }
+    setActionLoading(false);
+  };
+
+  const handleDismiss = async () => {
+    setActionLoading(true);
+    try {
+      await accountsApi.dismiss(account.dbId);
+      setVerdict({ type: "DISMISSED" });
+      if (onAction) onAction();
+    } catch (err) {
+      alert("Erreur: " + (err.message || "Dismiss failed"));
+    }
+    setActionLoading(false);
+  };
 
   return (
     <>
-      {modal && <RefusalModal title={`Refuse — ${account.id}`} onClose={() => setModal(false)} onConfirm={(r, n) => { setVerdict({ type: "REFUSED", reasons: r, note: n }); setModal(false); }} />}
-      <div style={{ background: "var(--bg2)", border: `1px solid ${verdict ? (verdict.type === "REFUSED" ? "var(--red-border)" : "var(--green-border)") : "var(--border)"}`, marginBottom: 8, overflow: "hidden", borderLeft: "2px solid var(--border2)", transition: "border-color 0.2s" }}>
+      {modal && <RefusalModal title={`Refuse — ${account.id}`} onClose={() => setModal(false)} onConfirm={(r, n) => { handleRefuse(r, n); setModal(false); }} />}
+      <div style={{ background: "var(--bg2)", border: `1px solid ${verdict ? (verdict.type === "REFUSED" ? "var(--red-border)" : verdict.type === "DISMISSED" ? "var(--border)" : "var(--green-border)") : "var(--border)"}`, marginBottom: 8, overflow: "hidden", borderLeft: "2px solid var(--border2)", transition: "border-color 0.2s" }}>
         {/* Header */}
-        <div onClick={() => !verdict && setExpanded(e => !e)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: verdict ? "default" : "pointer" }}>
+        <div onClick={() => !verdict && setExpanded(e => !e)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: verdict ? "default" : "pointer", flexWrap: "wrap" }}>
           <Badge label={account.type} />
           <span style={{ ...MONO, fontSize: 13, color: "var(--text2)" }}>{account.id}</span>
           <span style={{ ...MONO, fontSize: 13, color: "var(--gold)", fontWeight: 500 }}>${account.size.toLocaleString()}</span>
           <span style={{ fontSize: 12, color: account.profit >= 0 ? "var(--green)" : "var(--red)" }}>{account.profit >= 0 ? "+" : ""}{((account.profit / account.size) * 100).toFixed(2)}%</span>
+          <span style={{ ...MONO, fontSize: 11, color: "var(--text3)" }}>{trader?.name || ""}</span>
           <div style={{ flex: 1 }} />
-          {!allOk && !verdict && <span style={{ ...MONO, fontSize: 9, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>⚠ FLAGS DETECTED</span>}
+          {!autoOk && !verdict && <span style={{ ...MONO, fontSize: 9, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>BLOCKING FAIL</span>}
+          {manualChecks.length > 0 && !verdict && <span style={{ ...MONO, fontSize: 9, color: "var(--orange)", background: "var(--orange-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--orange-border)" }}>MANUAL CHECK</span>}
           {verdict ? (
-            <Badge label={verdict.type === "REFUSED" ? "REFUSED" : "FUNDED"} />
+            <Badge label={verdict.type === "REFUSED" ? "REFUSED" : verdict.type === "DISMISSED" ? "DISMISSED" : "FUNDED"} />
           ) : (
             <span style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{expanded ? "▲" : "▼"}</span>
           )}
@@ -860,76 +883,67 @@ function ReviewCard({ account, trader }) {
         {expanded && !verdict && (
           <div className="fade-up" style={{ padding: "0 18px 18px", borderTop: "1px solid var(--border)" }}>
             {/* Category badge */}
-            <div className="category-row" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, marginBottom: 12 }}>
+            <div className="category-row" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, marginBottom: 12, flexWrap: "wrap" }}>
               <span style={{ ...MONO, fontSize: 10, padding: "3px 10px", borderRadius: 1, background: isEval ? "var(--purple-bg)" : isInstant ? "var(--blue-bg)" : "var(--green-bg)", color: isEval ? "var(--purple)" : isInstant ? "var(--blue)" : "var(--green)", border: `1px solid ${isEval ? "rgba(167,139,250,0.2)" : isInstant ? "rgba(96,165,250,0.2)" : "var(--green-border)"}` }}>
-                {isEval ? "ÉVALUATION" : isInstant ? "INSTANT FUNDED" : "FUNDED"}
+                {isEval ? "EVAL" : isInstant ? "INSTANT" : "FUNDED"}
               </span>
               <span style={{ ...MONO, fontSize: 11, color: "var(--text3)" }}>
-                Consistency seuil: {consistencyThreshold}% · Contrats: {account.contractsMax || "—"} · Min daily gain: ${account.minDailyGain || "—"}
+                Profit: ${(account.profit || 0).toLocaleString()} / ${(account.profitTarget || 0).toLocaleString()} · DD: ${(account.currentDrawdown || 0).toLocaleString()} / ${(account.maxDrawdown || 0).toLocaleString()}
               </span>
-              {account.bufferLock && <span style={{ ...MONO, fontSize: 10, color: "var(--gold)", padding: "2px 8px", borderRadius: 1, background: "var(--gold-glow)", border: "1px solid rgba(201,168,76,0.2)" }}>Buffer lock: ${account.bufferLock.toLocaleString()}</span>}
+              {trader?.email && <span style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{trader.email}</span>}
             </div>
 
             {/* Checks grid */}
-            <div className="checks-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 16 }}>
-              {checks.map(({ label, value, ok, required, infoOnly, note }) => {
-                const bgColor = infoOnly ? "var(--bg3)" : ok ? "var(--green-bg)" : "var(--red-bg)";
-                const borderColor = infoOnly ? "var(--border)" : ok ? "var(--green-border)" : "var(--red-border)";
-                const textColor = infoOnly ? "var(--orange)" : ok ? "var(--green)" : "var(--red)";
+            <div className="checks-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8, marginBottom: 16 }}>
+              {checks.map(({ label, value, ok, required, needsManual }) => {
+                const bgColor = ok === null ? "var(--bg3)" : ok ? "var(--green-bg)" : "var(--red-bg)";
+                const borderColor = ok === null ? "var(--orange-border)" : ok ? "var(--green-border)" : "var(--red-border)";
+                const textColor = ok === null ? "var(--orange)" : ok ? "var(--green)" : "var(--red)";
                 return (
                   <div key={label} style={{ background: bgColor, border: `1px solid ${borderColor}`, padding: "10px 12px" }}>
-                    <div className="check-label" style={{ fontSize: 10, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
-                    <div className="check-value" style={{ ...MONO, fontSize: 15, color: textColor, fontWeight: 400 }}>{value}</div>
-                    <div className="check-required" style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{required}</div>
-                    {infoOnly && <div style={{ ...MONO, fontSize: 10, color: "var(--orange)", marginTop: 3 }}>Info only</div>}
-                    {note && <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 3 }}>{note}</div>}
+                    <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
+                    <div style={{ ...MONO, fontSize: 15, color: textColor, fontWeight: 400 }}>{value}</div>
+                    <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{required}</div>
+                    {needsManual && <div style={{ ...MONO, fontSize: 10, color: "var(--orange)", marginTop: 3 }}>Check in TTS/Claude</div>}
                   </div>
                 );
               })}
             </div>
 
             {/* Drawdown bar */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span className="dd-label" style={{ fontSize: 11, color: "var(--text2)" }}>Drawdown utilisé</span>
-                <span className="dd-value" style={{ ...MONO, fontSize: 11, color: account.currentDrawdown > account.maxDrawdown * 0.8 ? "var(--orange)" : "var(--green)" }}>${account.currentDrawdown.toLocaleString()} / ${account.maxDrawdown.toLocaleString()}</span>
-              </div>
-              <ProgressBar value={account.currentDrawdown} max={account.maxDrawdown} color={account.currentDrawdown > account.maxDrawdown * 0.8 ? "var(--orange)" : "var(--green)"} height={6} />
-            </div>
-
-            {/* AI Verdict suggestion */}
-            {(() => {
-              const verdict = blockingFails.length > 0 ? "REFUSED" : softFails.length > 0 ? "PENDING" : "APPROVED";
-              const colors = { APPROVED: "var(--green)", PENDING: "var(--orange)", REFUSED: "var(--red)" };
-              const bgs = { APPROVED: "var(--green-bg)", PENDING: "var(--orange-bg)", REFUSED: "var(--red-bg)" };
-              const borders = { APPROVED: "var(--green-border)", PENDING: "var(--orange-border)", REFUSED: "var(--red-border)" };
-              const icons = { APPROVED: "🤖✅", PENDING: "🤖⏳", REFUSED: "🤖❌" };
-              const msgs = {
-                APPROVED: isEval ? "Toutes les règles d'évaluation validées. Prêt à passer funded." : "Toutes les vérifications payout passées.",
-                PENDING: softFails.map(c => c.label).join(", ") + " — conditions non remplies.",
-                REFUSED: blockingFails.map(c => c.label).join(", ") + " — violation bloquante.",
-              };
-              return (
-                <div style={{ padding: "12px 16px", background: bgs[verdict], border: `1px solid ${borders[verdict]}`, borderRadius: 2, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 18 }}>{icons[verdict]}</span>
-                  <div>
-                    <div className="verdict-label" style={{ fontSize: 14, fontWeight: 700, color: colors[verdict], letterSpacing: "0.06em" }}>VERDICT : {verdict}</div>
-                    <div className="verdict-msg" style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>{msgs[verdict]}</div>
-                    {scalpingFlag && <div style={{ ...MONO, fontSize: 10, color: "var(--orange)", marginTop: 4 }}>⚠ Micro-scalping {account.scalping}% &gt; 40% — à noter (informatif)</div>}
-                  </div>
+            {account.maxDrawdown > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <span style={{ fontSize: 11, color: "var(--text2)" }}>Drawdown utilisé</span>
+                  <span style={{ ...MONO, fontSize: 11, color: account.currentDrawdown > account.maxDrawdown * 0.8 ? "var(--orange)" : "var(--green)" }}>${(account.currentDrawdown || 0).toLocaleString()} / ${account.maxDrawdown.toLocaleString()}</span>
                 </div>
-              );
-            })()}
+                <ProgressBar value={account.currentDrawdown || 0} max={account.maxDrawdown} color={account.currentDrawdown > account.maxDrawdown * 0.8 ? "var(--orange)" : "var(--green)"} height={6} />
+              </div>
+            )}
+
+            {/* Auto verdict suggestion */}
+            <div style={{ padding: "12px 16px", background: autoOk ? "var(--green-bg)" : "var(--red-bg)", border: `1px solid ${autoOk ? "var(--green-border)" : "var(--red-border)"}`, borderRadius: 2, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 18 }}>{autoOk ? "✅" : "❌"}</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: autoOk ? "var(--green)" : "var(--red)", letterSpacing: "0.06em" }}>
+                  AUTO-CHECKS: {autoOk ? "PASSED" : "FAILED — " + blockingFails.map(c => c.label).join(", ")}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text2)", marginTop: 2 }}>
+                  {manualChecks.length > 0 ? `${manualChecks.length} checks à vérifier manuellement (TTS/Claude project)` : "Tous les checks automatiques sont OK"}
+                </div>
+              </div>
+            </div>
 
             {/* Actions */}
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setVerdict({ type: "APPROVED" })} style={{ flex: 1, padding: "11px", background: "var(--green-bg)", border: "1px solid var(--green-border)", borderRadius: 2, color: "var(--green)", fontWeight: 700, fontSize: 13, letterSpacing: "0.05em", transition: "all 0.2s" }}
-                onMouseEnter={e => e.target.style.background = "rgba(52,211,153,0.15)"}
-                onMouseLeave={e => e.target.style.background = "var(--green-bg)"}>
-                ✓ VALIDATE & FUND
+              <button disabled={actionLoading} onClick={handleValidate} style={{ flex: 1, padding: "11px", background: "var(--green-bg)", border: "1px solid var(--green-border)", borderRadius: 2, color: "var(--green)", fontWeight: 700, fontSize: 13, letterSpacing: "0.05em", opacity: actionLoading ? 0.5 : 1 }}>
+                {actionLoading ? "..." : "✓ VALIDATE & FUND"}
               </button>
-              <button onClick={() => setModal(true)} style={{ flex: 1, padding: "11px", background: "var(--red-bg)", border: "1px solid var(--red-border)", borderRadius: 2, color: "var(--red)", fontWeight: 700, fontSize: 13, letterSpacing: "0.05em" }}>
+              <button disabled={actionLoading} onClick={() => setModal(true)} style={{ flex: 1, padding: "11px", background: "var(--red-bg)", border: "1px solid var(--red-border)", borderRadius: 2, color: "var(--red)", fontWeight: 700, fontSize: 13, letterSpacing: "0.05em" }}>
                 ✕ REFUSE
+              </button>
+              <button disabled={actionLoading} onClick={handleDismiss} style={{ padding: "11px 16px", background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 2, color: "var(--text3)", fontWeight: 500, fontSize: 12 }}>
+                Déjà traité
               </button>
             </div>
           </div>
@@ -941,29 +955,92 @@ function ReviewCard({ account, trader }) {
 
 function Reviews() {
   const [filter, setFilter] = useState("ALL");
-  const pendingTraders = TRADERS.filter(t => t.accounts.some(a => a.status === "PASSED"));
-  const filtered = filter === "ALL" ? pendingTraders : pendingTraders.filter(t => t.accounts.some(a => a.status === "PASSED" && a.type === filter));
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+
+  const loadReviews = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await accountsApi.pendingReviews();
+      setReviews(res?.data || []);
+    } catch (err) {
+      console.error("[REVIEWS] Failed to load:", err);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadReviews(); }, [loadReviews]);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      await accountsApi.sync();
+      await loadReviews();
+    } catch (err) {
+      console.error("[REVIEWS] Sync failed:", err);
+    }
+    setSyncing(false);
+  };
+
+  // Group reviews by trader
+  const byTrader = {};
+  for (const acc of reviews) {
+    const key = acc.trader_id;
+    if (!byTrader[key]) byTrader[key] = { id: key, name: acc.trader_name || "Unknown", email: acc.trader_email || "", country: acc.country || "", kyc: acc.kyc_status || "PENDING", accounts: [] };
+    byTrader[key].accounts.push({
+      dbId: acc.id,
+      id: acc.account_ref || acc.volumetrica_account_id,
+      volumetricaId: acc.volumetrica_account_id,
+      type: acc.type || "CHALLENGE",
+      size: acc.size || 50000,
+      status: acc.status || "PASSED",
+      accountCategory: acc.account_category || "EVAL",
+      profit: parseFloat(acc.profit) || 0,
+      profitTarget: acc.profit_target ? parseFloat(acc.profit_target) : null,
+      currentDrawdown: parseFloat(acc.current_drawdown) || 0,
+      maxDrawdown: parseFloat(acc.max_drawdown) || 2000,
+      consistencyThreshold: acc.consistency_threshold || 30,
+      contractsMax: acc.contracts_max || "—",
+      minDailyGain: acc.min_daily_gain || 100,
+      consistency: 0,
+      scalping: 0,
+      flipping: false,
+    });
+  }
+  const traders = Object.values(byTrader);
+  const filtered = filter === "ALL" ? traders : traders.filter(t => t.accounts.some(a => a.type === filter));
+  const totalPending = reviews.length;
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>CHALLENGE REVIEWS</div>
-          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PASSED")).length} accounts pending</div>
+          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{totalPending} accounts pending review</div>
         </div>
         <div style={{ flex: 1 }} />
+        <button onClick={handleSync} disabled={syncing} style={{ ...MONO, fontSize: 11, padding: "6px 14px", borderRadius: 2, border: "1px solid var(--border)", background: "var(--bg2)", color: syncing ? "var(--text3)" : "var(--gold)" }}>
+          {syncing ? "Syncing..." : "↻ Sync"}
+        </button>
         {["ALL", "CHALLENGE", "PRO"].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{ ...MONO, fontSize: 11, padding: "6px 14px", borderRadius: 2, border: "1px solid var(--border)", background: filter === f ? "var(--gold-glow2)" : "var(--bg2)", color: filter === f ? "var(--gold)" : "var(--text2)" }}>{f}</button>
         ))}
       </div>
 
-      {filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text3)", fontSize: 14 }}>No pending reviews for this filter.</div>
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text3)", fontSize: 14 }}>Loading reviews...</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "60px 0" }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
+          <div style={{ color: "var(--green)", fontSize: 16, fontWeight: 600, marginBottom: 6 }}>No pending reviews</div>
+          <div style={{ color: "var(--text3)", fontSize: 13 }}>Tous les comptes PASSED ont été traités. Les nouveaux apparaîtront ici automatiquement.</div>
+        </div>
       ) : filtered.map(trader => (
         <div key={trader.id} className="fade-up" style={{ marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "var(--gold)" }}>
-              {trader.name.split(" ").map(n => n[0]).join("")}
+              {(trader.name || "?").split(" ").map(n => n[0]).join("")}
             </div>
             <div>
               <span style={{ fontSize: 14, fontWeight: 600 }}>{trader.name}</span>
@@ -971,11 +1048,11 @@ function Reviews() {
             </div>
             <Badge label={trader.kyc} />
             <span style={{ ...MONO, fontSize: 10, background: "var(--bg3)", color: "var(--text2)", padding: "2px 9px", borderRadius: 2, border: "1px solid var(--border)" }}>
-              {trader.accounts.filter(a => a.status === "PASSED").length} account(s)
+              {trader.accounts.length} account(s)
             </span>
           </div>
-          {trader.accounts.filter(a => a.status === "PASSED").map(acc => (
-            <ReviewCard key={acc.id} account={acc} trader={trader} />
+          {trader.accounts.map(acc => (
+            <ReviewCard key={acc.dbId} account={acc} trader={trader} onAction={loadReviews} />
           ))}
         </div>
       ))}

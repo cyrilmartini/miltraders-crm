@@ -68,16 +68,18 @@ async function syncAccounts() {
 
       const traderId = traderRes.rows[0].id;
 
-      // 5. Upsert account
+      // 5. Upsert account — auto-set review_status for PASSED accounts
       await db.query(`
         INSERT INTO accounts (
           volumetrica_account_id, trader_id, account_ref, type, size, status,
           balance, equity, profit, profit_target, current_drawdown, max_drawdown,
           daily_limit, consistency_threshold, contracts_max, min_daily_gain,
           first_payout_target, buffer_lock, latent_loss_limit, account_category,
-          purchase_date, updated_at
+          review_status, purchase_date, updated_at
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,NOW())
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
+                CASE WHEN $6 = 'PASSED' THEN 'PENDING_REVIEW' ELSE NULL END,
+                $21,NOW())
         ON CONFLICT (volumetrica_account_id) DO UPDATE SET
           trader_id = EXCLUDED.trader_id,
           type = EXCLUDED.type,
@@ -89,6 +91,11 @@ async function syncAccounts() {
           current_drawdown = EXCLUDED.current_drawdown,
           account_category = EXCLUDED.account_category,
           account_ref = EXCLUDED.account_ref,
+          review_status = CASE
+            WHEN EXCLUDED.status = 'PASSED' AND accounts.review_status IS NULL THEN 'PENDING_REVIEW'
+            WHEN EXCLUDED.status != 'PASSED' AND accounts.review_status = 'PENDING_REVIEW' THEN NULL
+            ELSE accounts.review_status
+          END,
           updated_at = NOW()
       `, [
         String(acc.accountId || acc.id),

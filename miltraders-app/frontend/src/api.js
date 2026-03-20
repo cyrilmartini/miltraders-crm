@@ -37,8 +37,9 @@ export const traders = {
 export const accounts = {
   list: (params) => api.get('/accounts', { params }),
   pendingReviews: () => api.get('/accounts/pending-reviews'),
-  validate: (id) => api.post(`/accounts/${id}/validate`),
+  validate: (id, data) => api.post(`/accounts/${id}/validate`, data),
   refuse: (id, data) => api.post(`/accounts/${id}/refuse`, data),
+  dismiss: (id, data) => api.post(`/accounts/${id}/dismiss`, data),
   sync: () => api.post('/accounts/sync'),
 }
 
