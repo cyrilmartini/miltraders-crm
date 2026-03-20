@@ -78,7 +78,7 @@ async function syncAccounts() {
           review_status, purchase_date, updated_at
         )
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
-                CASE WHEN $6 = 'PASSED' THEN 'PENDING_REVIEW' ELSE NULL END,
+                CASE WHEN $6 = 'PASSED' AND $9 >= $10 AND $10 > 0 THEN 'PENDING_REVIEW' ELSE NULL END,
                 $21,NOW())
         ON CONFLICT (volumetrica_account_id) DO UPDATE SET
           trader_id = EXCLUDED.trader_id,
@@ -92,7 +92,7 @@ async function syncAccounts() {
           account_category = EXCLUDED.account_category,
           account_ref = EXCLUDED.account_ref,
           review_status = CASE
-            WHEN EXCLUDED.status = 'PASSED' AND accounts.review_status IS NULL THEN 'PENDING_REVIEW'
+            WHEN EXCLUDED.status = 'PASSED' AND EXCLUDED.profit >= EXCLUDED.profit_target AND EXCLUDED.profit_target > 0 AND accounts.review_status IS NULL THEN 'PENDING_REVIEW'
             WHEN EXCLUDED.status != 'PASSED' AND accounts.review_status = 'PENDING_REVIEW' THEN NULL
             ELSE accounts.review_status
           END,
