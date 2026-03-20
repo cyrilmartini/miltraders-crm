@@ -48,6 +48,10 @@ async function syncAccounts() {
       const profit = currentBalance - startBal;
       const currentDrawdown = Math.max(0, startBal - currentBalance);
 
+      // Compute review_status in JS to avoid SQL type conflicts
+      const initialReviewStatus = (status === "PASSED" && profitTarget !== null && profit >= profitTarget && profitTarget > 0)
+        ? "PENDING_REVIEW" : null;
+
       // 4. Upsert trader — using ownerUser or ownerAppUserId
       const userId = acc.ownerAppUserId || acc.ownerUser?.userId || acc.ownerOrganizationUserId || "unknown";
       const userEmail = acc.ownerUser?.email || acc.ownerUser?.username || "";
@@ -69,7 +73,7 @@ async function syncAccounts() {
 
       const traderId = traderRes.rows[0].id;
 
-      // 5. Upsert account — auto-set review_status for PASSED accounts
+      // 5. Upsert account
       await db.query(`
         INSERT INTO accounts (
           volumetrica_account_id, trader_id, account_ref, type, size, status,
@@ -78,9 +82,7 @@ async function syncAccounts() {
           first_payout_target, buffer_lock, latent_loss_limit, account_category,
           review_status, purchase_date, updated_at
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
-                CASE WHEN $6::text = 'PASSED' AND CAST($9 AS numeric) >= CAST($10 AS numeric) AND CAST($10 AS numeric) > 0 THEN 'PENDING_REVIEW' ELSE NULL END,
-                $21,NOW())
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,NOW())
         ON CONFLICT (volumetrica_account_id) DO UPDATE SET
           trader_id = EXCLUDED.trader_id,
           type = EXCLUDED.type,
@@ -103,8 +105,8 @@ async function syncAccounts() {
         traderId,                                // $2
         acc.header || acc.accountId,             // $3
         type,                                    // $4
-        Number(size),                            // $5 size (integer)
-        status,                                  // $6 status (text)
+        Number(size),                            // $5 size
+        status,                                  // $6 status
         Number(currentBalance),                  // $7 balance
         Number(currentBalance),                  // $8 equity
         Number(profit),                          // $9 profit
@@ -113,13 +115,14 @@ async function syncAccounts() {
         Number(rules.maxDrawdown),               // $12 max_drawdown
         type === "INSTANT" ? Number(rules.dailyLimit) : null, // $13 daily_limit
         Number(consistencyThreshold),            // $14 consistency_threshold
-        rules.contractsMax,                      // $15 contracts_max (text)
+        rules.contractsMax,                      // $15 contracts_max
         Number(rules.minDailyGain),              // $16 min_daily_gain
         Number(rules.profitTarget),              // $17 first_payout_target
         category === "FUNDED" ? Number(rules.bufferLock) : null, // $18 buffer_lock
         Number(rules.latentLossLimit),           // $19 latent_loss_limit
-        category,                                // $20 account_category (text)
-        acc.creationDate || new Date(),          // $21 purchase_date
+        category,                                // $20 account_category
+        initialReviewStatus,                     // $21 review_status (computed in JS)
+        acc.creationDate || new Date(),          // $22 purchase_date
       ]);
 
     } catch (err) {
