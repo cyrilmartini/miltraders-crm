@@ -169,7 +169,7 @@ const MONO = { fontFamily: "'IBM Plex Mono', monospace" };
 
 // ─── MOCK DATA ────────────────────────────────────────────────────────────────
 // TRADERS data loaded from API — see useData hook below
-const TRADERS_MOCK = []; // kept for initial render only
+const TRADERS_MOCK = []; // kept for initial render onlylet TRADERS = TRADERS_MOCK;
 
 const REFUSAL_REASONS = [
   "Consistency rule not met (< 30%)",
