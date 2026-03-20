@@ -215,6 +215,8 @@ function Badge({ label, size = "sm" }) {
   const map = {
     FUNDED: { bg: "var(--green-bg)", c: "var(--green)", b: "var(--green-border)" },
     PENDING_REVIEW: { bg: "var(--orange-bg)", c: "var(--orange)", b: "var(--orange-border)" },
+    ACTIVE: { bg: "var(--blue-bg)", c: "var(--blue)", b: "rgba(96,165,250,0.2)" },
+    DISABLED: { bg: "var(--red-bg)", c: "var(--red)", b: "var(--red-border)" },
     FAILED: { bg: "var(--red-bg)", c: "var(--red)", b: "var(--red-border)" },
     PASSED: { bg: "var(--gold-glow2)", c: "var(--gold)", b: "rgba(201,168,76,0.25)" },
     CHALLENGE: { bg: "var(--purple-bg)", c: "var(--purple)", b: "rgba(167,139,250,0.2)" },
@@ -559,7 +561,7 @@ const NAV_ITEMS = [
 ];
 
 function Sidebar({ page, setPage }) {
-  const pendingReviews = TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PENDING_REVIEW")).length;
+  const pendingReviews = TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PASSED")).length;
   const pendingPayouts = TRADERS.filter(t => t.pendingPayout).length;
   const badges = { reviews: pendingReviews, payouts: pendingPayouts };
 
@@ -617,8 +619,9 @@ function Sidebar({ page, setPage }) {
 // ─── OVERVIEW ─────────────────────────────────────────────────────────────────
 function Overview({ setPage }) {
   const allAccounts = TRADERS.flatMap(t => t.accounts);
-  const funded = allAccounts.filter(a => a.status === "FUNDED").length;
-  const pendingReview = allAccounts.filter(a => a.status === "PENDING_REVIEW").length;
+  const funded = allAccounts.filter(a => a.status === "FUNDED" && a.accountCategory === "FUNDED").length;
+  const activeEval = allAccounts.filter(a => a.status === "FUNDED" && a.accountCategory === "EVAL").length;
+  const pendingReview = allAccounts.filter(a => a.status === "PASSED").length;
   const failed = allAccounts.filter(a => a.status === "FAILED").length;
   const totalWithdrawn = TRADERS.reduce((a, t) => a + t.totalWithdrawn, 0);
   const pendingPayouts = TRADERS.filter(t => t.pendingPayout).length;
@@ -673,7 +676,8 @@ function Overview({ setPage }) {
           <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Status Breakdown</div>
           {[
             { label: "Funded", value: funded, total: allAccounts.length, color: "var(--green)" },
-            { label: "Pending Review", value: pendingReview, total: allAccounts.length, color: "var(--orange)" },
+            { label: "In Review", value: pendingReview, total: allAccounts.length, color: "var(--orange)" },
+            { label: "Active Eval", value: activeEval, total: allAccounts.length, color: "var(--blue)" },
             { label: "Failed", value: failed, total: allAccounts.length, color: "var(--red)" },
           ].map(({ label, value, total, color }) => (
             <div key={label} style={{ marginBottom: 12 }}>
@@ -715,13 +719,14 @@ function Overview({ setPage }) {
         <div className="fade-up" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "18px 20px" }}>
           <div style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Pass Rate</div>
           {(() => {
-            const total = allAccounts.length;
-            const passed = allAccounts.filter(a => a.status === "FUNDED" || a.status === "PASSED").length;
-            const rate = total > 0 ? Math.round((passed / total) * 100) : 0;
+            // Pass rate = accounts that completed eval (passed or failed), excluding still-active
+            const completed = allAccounts.filter(a => a.status === "PASSED" || a.status === "FAILED" || (a.status === "FUNDED" && a.accountCategory === "FUNDED"));
+            const passed = completed.filter(a => a.status === "PASSED" || (a.status === "FUNDED" && a.accountCategory === "FUNDED"));
+            const rate = completed.length > 0 ? Math.round((passed.length / completed.length) * 100) : 0;
             return (
               <div style={{ textAlign: "center", padding: "12px 0" }}>
                 <div style={{ fontSize: 32, fontWeight: 700, color: rate > 50 ? "var(--green)" : "var(--orange)", fontFamily: "'IBM Plex Mono', monospace" }}>{rate}%</div>
-                <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{passed} passed / {total} total accounts</div>
+                <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{passed.length} passed / {completed.length} completed</div>
               </div>
             );
           })()}
@@ -742,8 +747,9 @@ function Overview({ setPage }) {
           {(() => {
             const all = TRADERS.flatMap(t => t.accounts);
             const rows = [
-              { label: "Funded", count: all.filter(a => a.status === "FUNDED").length, color: "var(--green)" },
-              { label: "In Review", count: all.filter(a => a.status === "PENDING_REVIEW").length, color: "var(--orange)" },
+              { label: "Funded", count: all.filter(a => a.status === "FUNDED" && a.accountCategory === "FUNDED").length, color: "var(--green)" },
+              { label: "In Review", count: all.filter(a => a.status === "PASSED").length, color: "var(--orange)" },
+              { label: "Active Eval", count: all.filter(a => a.status === "FUNDED" && a.accountCategory === "EVAL").length, color: "var(--blue)" },
               { label: "Failed", count: all.filter(a => a.status === "FAILED").length, color: "var(--red)" },
             ];
             return (
@@ -935,15 +941,15 @@ function ReviewCard({ account, trader }) {
 
 function Reviews() {
   const [filter, setFilter] = useState("ALL");
-  const pendingTraders = TRADERS.filter(t => t.accounts.some(a => a.status === "PENDING_REVIEW"));
-  const filtered = filter === "ALL" ? pendingTraders : pendingTraders.filter(t => t.accounts.some(a => a.status === "PENDING_REVIEW" && a.type === filter));
+  const pendingTraders = TRADERS.filter(t => t.accounts.some(a => a.status === "PASSED"));
+  const filtered = filter === "ALL" ? pendingTraders : pendingTraders.filter(t => t.accounts.some(a => a.status === "PASSED" && a.type === filter));
 
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>CHALLENGE REVIEWS</div>
-          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PENDING_REVIEW")).length} accounts pending</div>
+          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PASSED")).length} accounts pending</div>
         </div>
         <div style={{ flex: 1 }} />
         {["ALL", "CHALLENGE", "PRO"].map(f => (
@@ -965,10 +971,10 @@ function Reviews() {
             </div>
             <Badge label={trader.kyc} />
             <span style={{ ...MONO, fontSize: 10, background: "var(--bg3)", color: "var(--text2)", padding: "2px 9px", borderRadius: 2, border: "1px solid var(--border)" }}>
-              {trader.accounts.filter(a => a.status === "PENDING_REVIEW").length} account(s)
+              {trader.accounts.filter(a => a.status === "PASSED").length} account(s)
             </span>
           </div>
-          {trader.accounts.filter(a => a.status === "PENDING_REVIEW").map(acc => (
+          {trader.accounts.filter(a => a.status === "PASSED").map(acc => (
             <ReviewCard key={acc.id} account={acc} trader={trader} />
           ))}
         </div>
@@ -1130,7 +1136,7 @@ function Payouts() {
 function TraderProfile({ trader, onBack }) {
   const [tab, setTab] = useState("accounts");
   const totalWithdrawn = trader.totalWithdrawn;
-  const funded = trader.accounts.filter(a => a.status === "FUNDED").length;
+  const funded = trader.accounts.filter(a => a.status === "FUNDED" && a.accountCategory === "FUNDED").length;
 
   return (
     <div className="fade-in">
@@ -1147,7 +1153,7 @@ function TraderProfile({ trader, onBack }) {
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
             <span style={{ fontSize: 20, fontWeight: 700 }}>{trader.name}</span>
             <Badge label={trader.kyc} />
-            {trader.pendingPayout && <Badge label="PENDING_REVIEW" />}
+            {trader.pendingPayout && <Badge label="PASSED" />}
           </div>
           <div style={{ ...MONO, fontSize: 12, color: "var(--text3)" }}>{trader.email} · {trader.country}</div>
           <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 4 }}>Joined {trader.joined} · Affiliate: {trader.affiliate} · ID: {trader.id}</div>
@@ -1330,8 +1336,8 @@ function TradersPage() {
     t.email.toLowerCase().includes(search.toLowerCase()) ||
     t.id.toLowerCase().includes(search.toLowerCase())
   );
-  if (filter === "FUNDED") list = list.filter(t => t.accounts.some(a => a.status === "FUNDED"));
-  if (filter === "PENDING") list = list.filter(t => t.accounts.some(a => a.status === "PENDING_REVIEW") || t.pendingPayout);
+  if (filter === "FUNDED") list = list.filter(t => t.accounts.some(a => a.status === "FUNDED" && a.accountCategory === "FUNDED"));
+  if (filter === "PENDING") list = list.filter(t => t.accounts.some(a => a.status === "PASSED") || t.pendingPayout);
   if (filter === "KYC_PENDING") list = list.filter(t => kycStates[t.id] !== "VERIFIED");
   if (sort === "withdrawn") list = [...list].sort((a, b) => b.totalWithdrawn - a.totalWithdrawn);
   if (sort === "joined") list = [...list].sort((a, b) => new Date(b.joined) - new Date(a.joined));
@@ -1342,7 +1348,7 @@ function TradersPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>TRADERS</div>
-          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.length} registered · {TRADERS.filter(t => t.accounts.some(a => a.status === "FUNDED")).length} funded · {Object.values(kycStates).filter(v => v !== "VERIFIED").length} KYC pending</div>
+          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.length} registered · {TRADERS.filter(t => t.accounts.some(a => a.status === "FUNDED" && a.accountCategory === "FUNDED")).length} funded · {Object.values(kycStates).filter(v => v !== "VERIFIED").length} KYC pending</div>
         </div>
         <div style={{ flex: 1 }} />
         <input placeholder="Search name, email, ID…" value={search} onChange={e => setSearch(e.target.value)}
@@ -1373,7 +1379,7 @@ function TradersPage() {
           </thead>
           <tbody>
             {list.map((trader, i) => {
-              const hasPending = trader.accounts.some(a => a.status === "PENDING_REVIEW") || !!trader.pendingPayout;
+              const hasPending = trader.accounts.some(a => a.status === "PASSED") || !!trader.pendingPayout;
               const types = [...new Set(trader.accounts.map(a => a.type))];
               const maxWithdrawal = trader.payouts.length > 0 ? Math.max(...trader.payouts.map(p => p.withdrawal)) : 0;
               const pendingWithdrawal = trader.pendingPayout ? trader.pendingPayout.withdrawalNumber : null;
@@ -1682,7 +1688,7 @@ const MOBILE_NAV = [
 ];
 
 function MobileBottomNav({ page, setPage }) {
-  const pendingReviews = TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PENDING_REVIEW")).length;
+  const pendingReviews = TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PASSED")).length;
   const pendingPayouts = TRADERS.filter(t => t.pendingPayout).length;
   const badges = { reviews: pendingReviews, payouts: pendingPayouts };
 
