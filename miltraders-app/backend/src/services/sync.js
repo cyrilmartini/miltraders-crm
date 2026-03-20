@@ -39,13 +39,12 @@ async function syncAccounts() {
       else if (acc.mode === 1) category = "SIM_FUNDED";
       // Note: status "ACTIVE" (Volumetrica Enabled=1) no longer overrides category.
       // Active eval accounts have status=ACTIVE and keep category=EVAL.
-      // Failed accounts get their own category for clear lifecycle tracking
-      if (status === "FAILED") category = "FAILED";
+      // Failed accounts keep their original category (EVAL or FUNDED) — matches TTS behavior.
 
       const consistencyThreshold = type === "INSTANT" ? 20 : 30;
       const profitTarget = category === "EVAL" ? rules.profitTarget : null;
-      const currentBalance = acc.balance || size;
-      const startBal = acc.startBalance || size;
+      const currentBalance = Number(acc.balance) || size;
+      const startBal = Number(acc.startBalance) || size;
       const profit = currentBalance - startBal;
       const currentDrawdown = Math.max(0, startBal - currentBalance);
 
@@ -79,8 +78,9 @@ async function syncAccounts() {
           first_payout_target, buffer_lock, latent_loss_limit, account_category,
           review_status, purchase_date, updated_at
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
-                CASE WHEN $6 = 'PASSED' AND $9 >= $10 AND $10 > 0 THEN 'PENDING_REVIEW' ELSE NULL END,
+        VALUES ($1,$2,$3,$4,$5::integer,$6,$7::numeric,$8::numeric,$9::numeric,$10::numeric,$11::numeric,$12::numeric,
+                $13::numeric,$14::integer,$15,$16::numeric,$17::numeric,$18::numeric,$19::numeric,$20,
+                CASE WHEN $6 = 'PASSED' AND $9::numeric >= $10::numeric AND $10::numeric > 0 THEN 'PENDING_REVIEW' ELSE NULL END,
                 $21,NOW())
         ON CONFLICT (volumetrica_account_id) DO UPDATE SET
           trader_id = EXCLUDED.trader_id,

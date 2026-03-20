@@ -633,7 +633,6 @@ function Overview({ setPage }) {
     { label: "PRO", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "EVAL").length, color: "var(--gold)" },
     { label: "PRO FUNDED", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "FUNDED").length, color: "#22d3ee" },
     { label: "INSTANT", value: allAccounts.filter(a => a.type === "INSTANT").length, color: "var(--blue)" },
-    { label: "FAILED", value: allAccounts.filter(a => a.accountCategory === "FAILED").length, color: "var(--red)" },
   ].filter(t => t.value > 0);
 
   const recentActivity = TRADERS.flatMap(t =>
