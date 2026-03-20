@@ -35,7 +35,7 @@ router.get("/pending-reviews", auth, async (req, res) => {
       SELECT a.*, t.name as trader_name, t.email as trader_email, t.country, t.kyc_status, t.affiliate
       FROM accounts a
       JOIN traders t ON t.id = a.trader_id
-      WHERE a.status = 'PENDING_REVIEW'
+      WHERE a.status = 'PASSED'
       ORDER BY a.updated_at ASC
     `);
     res.json({ success: true, data: result.rows });
