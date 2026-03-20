@@ -15,7 +15,7 @@ const GLOBAL_CSS = `
   --bg4: #172033;
   --border: #1a2238;
   --border2: #243050;
-  --gold: #b8922a;h
+  --gold: #b8922a;
   --gold2: #d4aa42;
   --gold-dim: #6b5218;
   --gold-glow: rgba(184,146,42,0.07);
@@ -120,7 +120,7 @@ table { border-collapse: collapse; }
   .queue-grid { grid-template-columns: 1fr !important; }
   .checks-grid { grid-template-columns: repeat(2, 1fr) !important; }
   main { padding: 14px 12px 90px !important; }
-  table { font-size: 15px; }
+  table { font-size: 12px; }
   th, td { padding: 9px 8px !important; }
   .mobile-nav { display: flex !important; }
 
@@ -137,35 +137,20 @@ table { border-collapse: collapse; }
 
   /* Verdict box */
   .verdict-label { font-size: 14px !important; }
-  .verdict-msg { font-size: 15px !important; }
+  .verdict-msg { font-size: 12px !important; }
 
   /* Drawdown bar label */
-  .dd-label { font-size: 15px !important; }
-  .dd-value { font-size: 15px !important; }
+  .dd-label { font-size: 12px !important; }
+  .dd-value { font-size: 12px !important; }
 
   /* Account row header */
-  .account-header span { font-size: 15px !important; }
+  .account-header span { font-size: 12px !important; }
 }
 @media (max-width: 480px) {
   .kpi-grid > div { min-width: 100% !important; }
   .checks-grid { grid-template-columns: 1fr 1fr !important; }
 }
-/* Spacing & sizing overrides */
-  .nav-btn { padding: 12px 20px !important; font-size: 15px !important; margin-bottom: 4px !important; border-radius: 8px !important; }
-  .sidebar { padding: 18px 14px !important; }
-  .sidebar nav { display: flex !important; flex-direction: column !important; gap: 4px !important; }
-  .topbar { padding: 16px 28px !important; }
-  .kpi-grid { gap: 20px !important; margin-bottom: 24px !important; }
-  .kpi-grid > div { padding: 22px !important; }
-  .charts-grid { gap: 20px !important; margin-bottom: 24px !important; }
-  .charts-grid > div { padding: 22px !important; }
-  .middle-row { gap: 20px !important; margin-bottom: 24px !important; }
-  .middle-row > div { padding: 22px !important; }
-  th, td { padding: 12px 16px !important; }
-  h2, h3 { margin-bottom: 16px !important; }
-  table { margin-top: 8px !important; }
-  select, input, button { font-size: 14px !important; }
-  .mobile-nav { display: none; }
+.mobile-nav { display: none; }
 
 /* Noise texture overlay */
 body::before {
@@ -184,7 +169,7 @@ const MONO = { fontFamily: "'IBM Plex Mono', monospace" };
 
 // ─── MOCK DATA ────────────────────────────────────────────────────────────────
 // TRADERS data loaded from API — see useData hook below
-const TRADERS_MOCK = []; // kept for initial render only
+const TRADERS_MOCK = [];
 let TRADERS = TRADERS_MOCK;
 
 const REFUSAL_REASONS = [
@@ -266,13 +251,13 @@ function KpiCard({ label, value, sub, trend, sparkData, color = "var(--gold)", i
       <div style={{ position: "absolute", bottom: 8, right: 10, opacity: 0.25 }}>
         <Sparkline data={sparkData} color={color} />
       </div>
-      <div style={{ ...MONO, fontSize: 12, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>{label}</div>
+      <div style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>{label}</div>
       <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 36, fontWeight: 600, color, letterSpacing: "-0.01em", lineHeight: 1 }}>{value}</div>
       {(sub || trend !== undefined) && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-          {sub && <span style={{ ...MONO, fontSize: 12, color: "var(--text3)", letterSpacing: "0.06em" }}>{sub}</span>}
+          {sub && <span style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.06em" }}>{sub}</span>}
           {trend !== undefined && (
-            <span style={{ ...MONO, fontSize: 12, color: trendUp ? "var(--green)" : "var(--red)" }}>
+            <span style={{ ...MONO, fontSize: 9, color: trendUp ? "var(--green)" : "var(--red)" }}>
               {trendUp ? "↑" : "↓"}{Math.abs(trend)}%
             </span>
           )}
@@ -355,7 +340,7 @@ function RefusalModal({ onClose, onConfirm, title = "Refusal Reasons" }) {
       <textarea
         placeholder="Additional notes (optional)…"
         value={note} onChange={e => setNote(e.target.value)}
-        style={{ width: "100%", background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 2, padding: "10px 14px", color: "var(--text)", fontSize: 15, resize: "vertical", minHeight: 70, outline: "none", marginBottom: 16, ...MONO }}
+        style={{ width: "100%", background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 2, padding: "10px 14px", color: "var(--text)", fontSize: 12, resize: "vertical", minHeight: 70, outline: "none", marginBottom: 16, ...MONO }}
       />
       <div style={{ display: "flex", gap: 10 }}>
         <button onClick={onClose} style={{ flex: 1, padding: "11px", background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 2, color: "var(--text2)", fontSize: 13 }}>Cancel</button>
@@ -409,7 +394,7 @@ function Login({ onLogin }) {
             </div>
             <div>
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 22, fontWeight: 700, letterSpacing: "0.12em", color: "var(--text)" }}>MILTRADERS</div>
-              <div style={{ ...MONO, fontSize: 12, color: "var(--gold-dim)", letterSpacing: "0.18em" }}>ADMIN PORTAL · DUBAI UAE</div>
+              <div style={{ ...MONO, fontSize: 9, color: "var(--gold-dim)", letterSpacing: "0.18em" }}>ADMIN PORTAL · DUBAI UAE</div>
             </div>
           </div>
           <div style={{ height: "1px", background: "var(--border)", marginTop: 20 }} />
@@ -420,7 +405,7 @@ function Login({ onLogin }) {
           { label: "Password", type: "password", val: pass, set: setPass, placeholder: "••••••••••••" },
         ].map(({ label, type, val, set, placeholder }) => (
           <div key={label} style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 14, color: "var(--text3)", letterSpacing: "0.07em", textTransform: "uppercase", display: "block", marginBottom: 7 }}>{label}</label>
+            <label style={{ fontSize: 11, color: "var(--text3)", letterSpacing: "0.07em", textTransform: "uppercase", display: "block", marginBottom: 7 }}>{label}</label>
             <input
               type={type} value={val} onChange={e => set(e.target.value)} placeholder={placeholder}
               onKeyDown={e => e.key === "Enter" && submit()}
@@ -431,7 +416,7 @@ function Login({ onLogin }) {
           </div>
         ))}
 
-        {err && <div style={{ ...MONO, fontSize: 14, color: "var(--red)", marginBottom: 12, padding: "8px 12px", background: "var(--red-bg)", borderRadius: 1, border: "1px solid var(--red-border)" }}>⚠ {err}</div>}
+        {err && <div style={{ ...MONO, fontSize: 11, color: "var(--red)", marginBottom: 12, padding: "8px 12px", background: "var(--red-bg)", borderRadius: 1, border: "1px solid var(--red-border)" }}>⚠ {err}</div>}
 
         <button onClick={submit} disabled={loading} style={{
           width: "100%", padding: "13px", marginTop: 8,
@@ -447,7 +432,7 @@ function Login({ onLogin }) {
         </button>
 
         <div style={{ textAlign: "center", marginTop: 20 }}>
-          <span style={{ ...MONO, fontSize: 12, color: "var(--text3)", letterSpacing: "0.08em" }}>admin@miltraders.com · Admin2026!</span>
+          <span style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.08em" }}>admin@miltraders.com · Admin2026!</span>
         </div>
       </div>
     </div>
@@ -487,7 +472,7 @@ function Topbar({ pageTitle, onLogout, setPage }) {
       {/* Live indicator */}
       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
         <span className="live-dot" />
-        <span style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>{now}</span>
+        <span style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{now}</span>
       </div>
 
       {/* Global Search */}
@@ -498,7 +483,7 @@ function Topbar({ pageTitle, onLogout, setPage }) {
           onChange={e => { setSearchQuery(e.target.value); setSearchOpen(e.target.value.length > 0); }}
           onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
           onFocus={() => searchQuery.length > 0 && setSearchOpen(true)}
-          style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderBottom: searchOpen ? "1px solid var(--gold)" : "1px solid var(--border)", padding: "7px 14px 7px 34px", color: "var(--text)", fontSize: 15, outline: "none", width: 220, ...MONO }}
+          style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderBottom: searchOpen ? "1px solid var(--gold)" : "1px solid var(--border)", padding: "7px 14px 7px 34px", color: "var(--text)", fontSize: 12, outline: "none", width: 220, ...MONO }}
         />
         <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text3)", fontSize: 13 }}>⌕</span>
         {searchOpen && searchResults.length > 0 && (
@@ -508,12 +493,12 @@ function Topbar({ pageTitle, onLogout, setPage }) {
                 style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--bg3)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <span style={{ ...MONO, fontSize: 12, color: r.type === "trader" ? "var(--gold)" : "var(--blue)", background: r.type === "trader" ? "var(--gold-glow)" : "var(--blue-bg)", padding: "2px 7px", border: `1px solid ${r.type === "trader" ? "rgba(184,146,42,0.2)" : "rgba(74,144,217,0.2)"}` }}>
+                <span style={{ ...MONO, fontSize: 9, color: r.type === "trader" ? "var(--gold)" : "var(--blue)", background: r.type === "trader" ? "var(--gold-glow)" : "var(--blue-bg)", padding: "2px 7px", border: `1px solid ${r.type === "trader" ? "rgba(184,146,42,0.2)" : "rgba(74,144,217,0.2)"}` }}>
                   {r.type === "trader" ? "TRADER" : "ACCOUNT"}
                 </span>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 500 }}>{r.name}</div>
-                  <div style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>{r.sub}</div>
+                  <div style={{ fontSize: 12, fontWeight: 500 }}>{r.name}</div>
+                  <div style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{r.sub}</div>
                 </div>
               </div>
             ))}
@@ -521,7 +506,7 @@ function Topbar({ pageTitle, onLogout, setPage }) {
         )}
         {searchOpen && searchResults.length === 0 && searchQuery.length >= 2 && (
           <div style={{ position: "absolute", top: 38, left: 0, right: 0, background: "var(--bg2)", border: "1px solid var(--border2)", padding: "14px", zIndex: 200 }}>
-            <span style={{ ...MONO, fontSize: 14, color: "var(--text3)" }}>No results for "{searchQuery}"</span>
+            <span style={{ ...MONO, fontSize: 11, color: "var(--text3)" }}>No results for "{searchQuery}"</span>
           </div>
         )}
       </div>
@@ -534,15 +519,15 @@ function Topbar({ pageTitle, onLogout, setPage }) {
         </button>
         {notifOpen && (
           <div className="fade-in" style={{ position: "absolute", right: 0, top: 44, width: 300, background: "var(--bg2)", border: "1px solid var(--border2)", overflow: "hidden", boxShadow: "0 20px 40px rgba(0,0,0,0.4)", zIndex: 100 }}>
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", fontSize: 15, fontWeight: 600, letterSpacing: "0.04em" }}>Notifications</div>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", fontSize: 12, fontWeight: 600, letterSpacing: "0.04em" }}>Notifications</div>
             {notifications.map(n => (
               <div key={n.id} style={{ padding: "11px 16px", borderBottom: "1px solid var(--border)", display: "flex", gap: 10, cursor: "pointer" }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--bg3)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                 <span style={{ fontSize: 16 }}>{n.type === "payout" ? "💰" : n.type === "flag" ? "🚩" : "📋"}</span>
                 <div>
-                  <div style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.4 }}>{n.text}</div>
-                  <div style={{ ...MONO, fontSize: 13, color: "var(--text3)", marginTop: 3 }}>{n.time}</div>
+                  <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.4 }}>{n.text}</div>
+                  <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 3 }}>{n.time}</div>
                 </div>
               </div>
             ))}
@@ -552,10 +537,10 @@ function Topbar({ pageTitle, onLogout, setPage }) {
 
       {/* Avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "5px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8 }}>
-        <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg, var(--gold), var(--gold2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#000" }}>C</div>
+        <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg, var(--gold), var(--gold2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>C</div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>Cycy</div>
-          <div style={{ ...MONO, fontSize: 12, color: "var(--gold-dim)" }}>ADMIN</div>
+          <div style={{ fontSize: 11, fontWeight: 600 }}>Cycy</div>
+          <div style={{ ...MONO, fontSize: 9, color: "var(--gold-dim)" }}>ADMIN</div>
         </div>
         <button onClick={onLogout} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 14, marginLeft: 4 }}>⏻</button>
       </div>
@@ -585,7 +570,7 @@ function Sidebar({ page, setPage }) {
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, var(--gold) 0%, transparent 70%)` }} />
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
           <div style={{ width: 30, height: 30, background: "var(--bg3)", border: "1px solid var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, clipPath: "polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%)" }}>
-            <span style={{ color: "var(--gold)", fontWeight: 700, fontSize: 14, letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif" }}>MT</span>
+            <span style={{ color: "var(--gold)", fontWeight: 700, fontSize: 11, letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif" }}>MT</span>
           </div>
           <div>
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 16, fontWeight: 700, letterSpacing: "0.1em", color: "var(--text)" }}>MILTRADERS</div>
@@ -611,10 +596,10 @@ function Sidebar({ page, setPage }) {
               borderLeft: active ? "2px solid var(--gold)" : "2px solid transparent",
               letterSpacing: active ? "0.04em" : "0.02em",
             }}>
-              <span style={{ ...MONO, fontSize: 13, opacity: active ? 0.8 : 0.35, color: active ? "var(--gold)" : "var(--text2)", minWidth: 14 }}>{n.emoji}</span>
+              <span style={{ ...MONO, fontSize: 10, opacity: active ? 0.8 : 0.35, color: active ? "var(--gold)" : "var(--text2)", minWidth: 14 }}>{n.emoji}</span>
               <span style={{ flex: 1, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, letterSpacing: "0.06em" }}>{n.label.toUpperCase()}</span>
               {badge > 0 && (
-                <span style={{ ...MONO, fontSize: 12, background: "var(--gold)", color: "#000", borderRadius: 2, padding: "1px 7px", fontWeight: 700 }}>{badge}</span>
+                <span style={{ ...MONO, fontSize: 9, background: "var(--gold)", color: "#000", borderRadius: 2, padding: "1px 7px", fontWeight: 700 }}>{badge}</span>
               )}
             </button>
           );
@@ -623,7 +608,7 @@ function Sidebar({ page, setPage }) {
 
       {/* Version */}
       <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)" }}>
-        <div style={{ ...MONO, fontSize: 12, color: "var(--text3)" }}>v1.0.0 · Production</div>
+        <div style={{ ...MONO, fontSize: 9, color: "var(--text3)" }}>v1.0.0 · Production</div>
       </div>
     </aside>
   );
@@ -655,18 +640,18 @@ function Overview({ setPage }) {
     <div>
       {/* KPI row */}
       <div className="kpi-grid" style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <KpiCard label="Total Traders" value={totalTraders} sub="Registered" sparkData={[3, 4, 4, 5, 5, 6]} delay={0.05} />
-        <KpiCard label="Funded Accounts" value={funded} sub="Active" sparkData={[1, 2, 2, 3, 3, 4]} color="var(--green)" delay={0.1} />
-        <KpiCard label="Pending Reviews" value={pendingReview} sub="Awaiting" sparkData={[0, 1, 2, 3, 4, 4]} color="var(--orange)" delay={0.15} />
-        <KpiCard label="Pending Payouts" value={pendingPayouts} sub="Requests" sparkData={[0, 1, 1, 2, 2, 3]} color="var(--blue)" delay={0.2} />
-        <KpiCard label="Total Paid Out" value={"$" + (totalWithdrawn / 1000).toFixed(1) + "k"} sub="All time" sparkData={[2, 5, 8, 12, 18, 25]} trend={12} delay={0.25} />
+        <KpiCard label="Total Traders" value={totalTraders} sub="Registered" sparkData={[]} delay={0.05} />
+        <KpiCard label="Funded Accounts" value={funded} sub="Active" sparkData={[]} color="var(--green)" delay={0.1} />
+        <KpiCard label="Pending Reviews" value={pendingReview} sub="Awaiting" sparkData={[]} color="var(--orange)" delay={0.15} />
+        <KpiCard label="Pending Payouts" value={pendingPayouts} sub="Requests" sparkData={[]} color="var(--blue)" delay={0.2} />
+        <KpiCard label="Total Paid Out" value={"$" + (totalWithdrawn / 1000).toFixed(1) + "k"} sub="All time" sparkData={[]} delay={0.25} />
       </div>
 
       {/* Middle row */}
       <div className="middle-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr", gap: 16, marginBottom: 20 }}>
         {/* Account breakdown */}
         <div className="fade-up stagger-3" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "20px 22px" }}>
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Account Types</div>
+          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Account Types</div>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <DonutChart data={typeBreakdown} size={80} />
             <div style={{ flex: 1 }}>
@@ -674,9 +659,9 @@ function Overview({ setPage }) {
                 <div key={t.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                     <div style={{ width: 7, height: 7, borderRadius: "50%", background: t.color }} />
-                    <span style={{ fontSize: 15, color: "var(--text2)" }}>{t.label}</span>
+                    <span style={{ fontSize: 12, color: "var(--text2)" }}>{t.label}</span>
                   </div>
-                  <span style={{ ...MONO, fontSize: 15, color: t.color }}>{t.value}</span>
+                  <span style={{ ...MONO, fontSize: 12, color: t.color }}>{t.value}</span>
                 </div>
               ))}
             </div>
@@ -685,7 +670,7 @@ function Overview({ setPage }) {
 
         {/* Pass rate */}
         <div className="fade-up stagger-4" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "20px 22px" }}>
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Status Breakdown</div>
+          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Status Breakdown</div>
           {[
             { label: "Funded", value: funded, total: allAccounts.length, color: "var(--green)" },
             { label: "Pending Review", value: pendingReview, total: allAccounts.length, color: "var(--orange)" },
@@ -693,8 +678,8 @@ function Overview({ setPage }) {
           ].map(({ label, value, total, color }) => (
             <div key={label} style={{ marginBottom: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontSize: 15, color: "var(--text2)" }}>{label}</span>
-                <span style={{ ...MONO, fontSize: 14, color }}>{value} <span style={{ color: "var(--text3)" }}>/ {total}</span></span>
+                <span style={{ fontSize: 12, color: "var(--text2)" }}>{label}</span>
+                <span style={{ ...MONO, fontSize: 11, color }}>{value} <span style={{ color: "var(--text3)" }}>/ {total}</span></span>
               </div>
               <ProgressBar value={value} max={total} color={color} />
             </div>
@@ -704,20 +689,20 @@ function Overview({ setPage }) {
         {/* Top traders */}
         <div className="fade-up stagger-5" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "20px 22px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", textTransform: "uppercase" }}>Top Traders</div>
-            <button onClick={() => setPage("traders")} style={{ ...MONO, fontSize: 13, color: "var(--gold)", background: "none", border: "none" }}>View all →</button>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", textTransform: "uppercase" }}>Top Traders</div>
+            <button onClick={() => setPage("traders")} style={{ ...MONO, fontSize: 10, color: "var(--gold)", background: "none", border: "none" }}>View all →</button>
           </div>
           {topTraders.map((t, i) => (
             <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <div style={{ ...MONO, fontSize: 14, color: "var(--text3)", width: 14 }}>#{i + 1}</div>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--gold)", flexShrink: 0 }}>
+              <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", width: 14 }}>#{i + 1}</div>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "var(--gold)", flexShrink: 0 }}>
                 {t.name.split(" ").map(n => n[0]).join("")}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 500 }}>{t.name}</div>
-                <div style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>{t.accounts.length} accounts</div>
+                <div style={{ fontSize: 12, fontWeight: 500 }}>{t.name}</div>
+                <div style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{t.accounts.length} accounts</div>
               </div>
-              <div style={{ ...MONO, fontSize: 15, color: "var(--green)" }}>${t.totalWithdrawn.toLocaleString()}</div>
+              <div style={{ ...MONO, fontSize: 12, color: "var(--green)" }}>${t.totalWithdrawn.toLocaleString()}</div>
             </div>
           ))}
         </div>
@@ -726,46 +711,34 @@ function Overview({ setPage }) {
       {/* Charts row */}
       <div className="charts-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 20 }}>
 
-        {/* Pass Rate chart */}
+        {/* Pass Rate */}
         <div className="fade-up" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "18px 20px" }}>
-          <div style={{ ...MONO, fontSize: 12, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Pass Rate — 8 weeks</div>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 52, marginBottom: 8 }}>
-            {[38,42,35,55,48,62,58,70].map((v, i) => (
-              <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, height: "100%", justifyContent: "flex-end" }}>
-                <div style={{ width: "100%", background: i === 7 ? "var(--gold)" : "var(--border2)", height: `${v}%`, transition: "height 0.4s ease" }} />
-                <span style={{ ...MONO, fontSize: 7, color: "var(--text3)" }}>W{i+1}</span>
+          <div style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Pass Rate</div>
+          {(() => {
+            const total = allAccounts.length;
+            const passed = allAccounts.filter(a => a.status === "FUNDED" || a.status === "PASSED").length;
+            const rate = total > 0 ? Math.round((passed / total) * 100) : 0;
+            return (
+              <div style={{ textAlign: "center", padding: "12px 0" }}>
+                <div style={{ fontSize: 32, fontWeight: 700, color: rate > 50 ? "var(--green)" : "var(--orange)", fontFamily: "'IBM Plex Mono', monospace" }}>{rate}%</div>
+                <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{passed} passed / {total} total accounts</div>
               </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>Avg 51%</span>
-            <span style={{ ...MONO, fontSize: 14, color: "var(--gold)", fontWeight: 500 }}>+12% vs last week</span>
-          </div>
+            );
+          })()}
         </div>
 
-        {/* Payout volume chart */}
+        {/* Payout volume */}
         <div className="fade-up" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "18px 20px" }}>
-          <div style={{ ...MONO, fontSize: 12, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Payout Volume — 6 months</div>
-          <svg width="100%" height="52" viewBox="0 0 200 52" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="payGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#b8922a" stopOpacity="0.4"/>
-                <stop offset="100%" stopColor="#b8922a" stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            <polygon points="0,52 0,42 33,36 66,28 100,20 133,14 166,8 200,4 200,52" fill="url(#payGrad)"/>
-            <polyline points="0,42 33,36 66,28 100,20 133,14 166,8 200,4" fill="none" stroke="#b8922a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="200" cy="4" r="3" fill="#b8922a"/>
-          </svg>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            <span style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>Jan → now</span>
-            <span style={{ ...MONO, fontSize: 14, color: "var(--green)", fontWeight: 500 }}>$25.3k total</span>
+          <div style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Total Payouts</div>
+          <div style={{ textAlign: "center", padding: "12px 0" }}>
+            <div style={{ fontSize: 32, fontWeight: 700, color: totalWithdrawn > 0 ? "var(--green)" : "var(--text3)", fontFamily: "'IBM Plex Mono', monospace" }}>${(totalWithdrawn / 1000).toFixed(1)}k</div>
+            <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{TRADERS.filter(t => t.totalWithdrawn > 0).length} traders paid</div>
           </div>
         </div>
 
         {/* Account status donut + breakdown */}
         <div className="fade-up" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "18px 20px" }}>
-          <div style={{ ...MONO, fontSize: 12, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Account Health</div>
+          <div style={{ ...MONO, fontSize: 9, color: "var(--text3)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>Account Health</div>
           {(() => {
             const all = TRADERS.flatMap(t => t.accounts);
             const rows = [
@@ -778,8 +751,8 @@ function Overview({ setPage }) {
                 {rows.map(r => (
                   <div key={r.label} style={{ marginBottom: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ ...MONO, fontSize: 13, color: "var(--text2)" }}>{r.label}</span>
-                      <span style={{ ...MONO, fontSize: 13, color: r.color }}>{r.count}</span>
+                      <span style={{ ...MONO, fontSize: 10, color: "var(--text2)" }}>{r.label}</span>
+                      <span style={{ ...MONO, fontSize: 10, color: r.color }}>{r.count}</span>
                     </div>
                     <div style={{ height: 3, background: "var(--bg3)", overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${(r.count / all.length) * 100}%`, background: r.color, transition: "width 0.6s ease" }} />
@@ -794,7 +767,7 @@ function Overview({ setPage }) {
 
       {/* Activity feed */}
       <div className="fade-up" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "20px 22px" }}>
-        <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Recent Activity</div>
+        <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Recent Activity</div>
         {recentActivity.map((a, i) => {
           const icons = { PAYOUT_REQUEST: "💰", PAYOUT_PAID: "✅", FLAG: "🚩", FAILED: "❌", SIGNUP: "👤", PURCHASE: "🛒" };
           return (
@@ -802,7 +775,7 @@ function Overview({ setPage }) {
               <span style={{ fontSize: 16, lineHeight: 1.4 }}>{icons[a.type] || "•"}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13 }}><span style={{ color: "var(--gold)", fontWeight: 500 }}>{a.trader}</span> — {a.note}</div>
-                <div style={{ ...MONO, fontSize: 13, color: "var(--text3)", marginTop: 3 }}>{a.date}</div>
+                <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 3 }}>{a.date}</div>
               </div>
             </div>
           );
@@ -867,13 +840,13 @@ function ReviewCard({ account, trader }) {
           <Badge label={account.type} />
           <span style={{ ...MONO, fontSize: 13, color: "var(--text2)" }}>{account.id}</span>
           <span style={{ ...MONO, fontSize: 13, color: "var(--gold)", fontWeight: 500 }}>${account.size.toLocaleString()}</span>
-          <span style={{ fontSize: 15, color: account.profit >= 0 ? "var(--green)" : "var(--red)" }}>{account.profit >= 0 ? "+" : ""}{((account.profit / account.size) * 100).toFixed(2)}%</span>
+          <span style={{ fontSize: 12, color: account.profit >= 0 ? "var(--green)" : "var(--red)" }}>{account.profit >= 0 ? "+" : ""}{((account.profit / account.size) * 100).toFixed(2)}%</span>
           <div style={{ flex: 1 }} />
-          {!allOk && !verdict && <span style={{ ...MONO, fontSize: 12, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>⚠ FLAGS DETECTED</span>}
+          {!allOk && !verdict && <span style={{ ...MONO, fontSize: 9, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>⚠ FLAGS DETECTED</span>}
           {verdict ? (
             <Badge label={verdict.type === "REFUSED" ? "REFUSED" : "FUNDED"} />
           ) : (
-            <span style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>{expanded ? "▲" : "▼"}</span>
+            <span style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{expanded ? "▲" : "▼"}</span>
           )}
         </div>
 
@@ -882,13 +855,13 @@ function ReviewCard({ account, trader }) {
           <div className="fade-up" style={{ padding: "0 18px 18px", borderTop: "1px solid var(--border)" }}>
             {/* Category badge */}
             <div className="category-row" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, marginBottom: 12 }}>
-              <span style={{ ...MONO, fontSize: 13, padding: "3px 10px", borderRadius: 1, background: isEval ? "var(--purple-bg)" : isInstant ? "var(--blue-bg)" : "var(--green-bg)", color: isEval ? "var(--purple)" : isInstant ? "var(--blue)" : "var(--green)", border: `1px solid ${isEval ? "rgba(167,139,250,0.2)" : isInstant ? "rgba(96,165,250,0.2)" : "var(--green-border)"}` }}>
+              <span style={{ ...MONO, fontSize: 10, padding: "3px 10px", borderRadius: 1, background: isEval ? "var(--purple-bg)" : isInstant ? "var(--blue-bg)" : "var(--green-bg)", color: isEval ? "var(--purple)" : isInstant ? "var(--blue)" : "var(--green)", border: `1px solid ${isEval ? "rgba(167,139,250,0.2)" : isInstant ? "rgba(96,165,250,0.2)" : "var(--green-border)"}` }}>
                 {isEval ? "ÉVALUATION" : isInstant ? "INSTANT FUNDED" : "FUNDED"}
               </span>
-              <span style={{ ...MONO, fontSize: 14, color: "var(--text3)" }}>
+              <span style={{ ...MONO, fontSize: 11, color: "var(--text3)" }}>
                 Consistency seuil: {consistencyThreshold}% · Contrats: {account.contractsMax || "—"} · Min daily gain: ${account.minDailyGain || "—"}
               </span>
-              {account.bufferLock && <span style={{ ...MONO, fontSize: 13, color: "var(--gold)", padding: "2px 8px", borderRadius: 1, background: "var(--gold-glow)", border: "1px solid rgba(201,168,76,0.2)" }}>Buffer lock: ${account.bufferLock.toLocaleString()}</span>}
+              {account.bufferLock && <span style={{ ...MONO, fontSize: 10, color: "var(--gold)", padding: "2px 8px", borderRadius: 1, background: "var(--gold-glow)", border: "1px solid rgba(201,168,76,0.2)" }}>Buffer lock: ${account.bufferLock.toLocaleString()}</span>}
             </div>
 
             {/* Checks grid */}
@@ -899,11 +872,11 @@ function ReviewCard({ account, trader }) {
                 const textColor = infoOnly ? "var(--orange)" : ok ? "var(--green)" : "var(--red)";
                 return (
                   <div key={label} style={{ background: bgColor, border: `1px solid ${borderColor}`, padding: "10px 12px" }}>
-                    <div className="check-label" style={{ fontSize: 13, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
+                    <div className="check-label" style={{ fontSize: 10, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
                     <div className="check-value" style={{ ...MONO, fontSize: 15, color: textColor, fontWeight: 400 }}>{value}</div>
-                    <div className="check-required" style={{ ...MONO, fontSize: 13, color: "var(--text3)", marginTop: 4 }}>{required}</div>
-                    {infoOnly && <div style={{ ...MONO, fontSize: 13, color: "var(--orange)", marginTop: 3 }}>Info only</div>}
-                    {note && <div style={{ ...MONO, fontSize: 13, color: "var(--text3)", marginTop: 3 }}>{note}</div>}
+                    <div className="check-required" style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{required}</div>
+                    {infoOnly && <div style={{ ...MONO, fontSize: 10, color: "var(--orange)", marginTop: 3 }}>Info only</div>}
+                    {note && <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 3 }}>{note}</div>}
                   </div>
                 );
               })}
@@ -912,8 +885,8 @@ function ReviewCard({ account, trader }) {
             {/* Drawdown bar */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span className="dd-label" style={{ fontSize: 14, color: "var(--text2)" }}>Drawdown utilisé</span>
-                <span className="dd-value" style={{ ...MONO, fontSize: 14, color: account.currentDrawdown > account.maxDrawdown * 0.8 ? "var(--orange)" : "var(--green)" }}>${account.currentDrawdown.toLocaleString()} / ${account.maxDrawdown.toLocaleString()}</span>
+                <span className="dd-label" style={{ fontSize: 11, color: "var(--text2)" }}>Drawdown utilisé</span>
+                <span className="dd-value" style={{ ...MONO, fontSize: 11, color: account.currentDrawdown > account.maxDrawdown * 0.8 ? "var(--orange)" : "var(--green)" }}>${account.currentDrawdown.toLocaleString()} / ${account.maxDrawdown.toLocaleString()}</span>
               </div>
               <ProgressBar value={account.currentDrawdown} max={account.maxDrawdown} color={account.currentDrawdown > account.maxDrawdown * 0.8 ? "var(--orange)" : "var(--green)"} height={6} />
             </div>
@@ -936,7 +909,7 @@ function ReviewCard({ account, trader }) {
                   <div>
                     <div className="verdict-label" style={{ fontSize: 14, fontWeight: 700, color: colors[verdict], letterSpacing: "0.06em" }}>VERDICT : {verdict}</div>
                     <div className="verdict-msg" style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>{msgs[verdict]}</div>
-                    {scalpingFlag && <div style={{ ...MONO, fontSize: 13, color: "var(--orange)", marginTop: 4 }}>⚠ Micro-scalping {account.scalping}% &gt; 40% — à noter (informatif)</div>}
+                    {scalpingFlag && <div style={{ ...MONO, fontSize: 10, color: "var(--orange)", marginTop: 4 }}>⚠ Micro-scalping {account.scalping}% &gt; 40% — à noter (informatif)</div>}
                   </div>
                 </div>
               );
@@ -970,11 +943,11 @@ function Reviews() {
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>CHALLENGE REVIEWS</div>
-          <div style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginTop: 2 }}>{TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PENDING_REVIEW")).length} accounts pending</div>
+          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PENDING_REVIEW")).length} accounts pending</div>
         </div>
         <div style={{ flex: 1 }} />
         {["ALL", "CHALLENGE", "PRO"].map(f => (
-          <button key={f} onClick={() => setFilter(f)} style={{ ...MONO, fontSize: 14, padding: "6px 14px", borderRadius: 2, border: "1px solid var(--border)", background: filter === f ? "var(--gold-glow2)" : "var(--bg2)", color: filter === f ? "var(--gold)" : "var(--text2)" }}>{f}</button>
+          <button key={f} onClick={() => setFilter(f)} style={{ ...MONO, fontSize: 11, padding: "6px 14px", borderRadius: 2, border: "1px solid var(--border)", background: filter === f ? "var(--gold-glow2)" : "var(--bg2)", color: filter === f ? "var(--gold)" : "var(--text2)" }}>{f}</button>
         ))}
       </div>
 
@@ -983,15 +956,15 @@ function Reviews() {
       ) : filtered.map(trader => (
         <div key={trader.id} className="fade-up" style={{ marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "var(--gold)" }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "var(--gold)" }}>
               {trader.name.split(" ").map(n => n[0]).join("")}
             </div>
             <div>
               <span style={{ fontSize: 14, fontWeight: 600 }}>{trader.name}</span>
-              <span style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginLeft: 10 }}>{trader.country}</span>
+              <span style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginLeft: 10 }}>{trader.country}</span>
             </div>
             <Badge label={trader.kyc} />
-            <span style={{ ...MONO, fontSize: 13, background: "var(--bg3)", color: "var(--text2)", padding: "2px 9px", borderRadius: 2, border: "1px solid var(--border)" }}>
+            <span style={{ ...MONO, fontSize: 10, background: "var(--bg3)", color: "var(--text2)", padding: "2px 9px", borderRadius: 2, border: "1px solid var(--border)" }}>
               {trader.accounts.filter(a => a.status === "PENDING_REVIEW").length} account(s)
             </span>
           </div>
@@ -1032,13 +1005,13 @@ function PayoutCard({ payout, trader }) {
       {modal && <RefusalModal title={`Refuse payout — ${payout.account}`} onClose={() => setModal(false)} onConfirm={(r, n) => { setVerdict({ type: "REFUSED" }); setModal(false); }} />}
       <div style={{ background: "var(--bg2)", border: `1px solid ${verdict ? (verdict.type === "REFUSED" ? "var(--red-border)" : "var(--green-border)") : "var(--border)"}`, marginBottom: 8, overflow: "hidden", borderLeft: "2px solid var(--border2)" }}>
         <div onClick={() => !verdict && setExpanded(e => !e)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: verdict ? "default" : "pointer" }}>
-          <span style={{ ...MONO, fontSize: 15, color: "var(--text2)" }}>{payout.account}</span>
-          <span style={{ ...MONO, fontSize: 13, background: "var(--bg3)", color: "var(--text2)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--border)" }}>#{payout.withdrawalNumber}</span>
+          <span style={{ ...MONO, fontSize: 12, color: "var(--text2)" }}>{payout.account}</span>
+          <span style={{ ...MONO, fontSize: 10, background: "var(--bg3)", color: "var(--text2)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--border)" }}>#{payout.withdrawalNumber}</span>
           <span style={{ ...MONO, fontSize: 14, color: "var(--green)", fontWeight: 400 }}>${capAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-          <span style={{ fontSize: 14, color: "var(--text3)" }}>of ${payout.profitSinceLast.toLocaleString()} profit</span>
+          <span style={{ fontSize: 11, color: "var(--text3)" }}>of ${payout.profitSinceLast.toLocaleString()} profit</span>
           <div style={{ flex: 1 }} />
           {verdict ? <Badge label={verdict.type === "REFUSED" ? "REFUSED" : "PAID"} /> : (
-            <span style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>{expanded ? "▲" : "▼"}</span>
+            <span style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{expanded ? "▲" : "▼"}</span>
           )}
         </div>
         {expanded && !verdict && (
@@ -1046,7 +1019,7 @@ function PayoutCard({ payout, trader }) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginTop: 14, marginBottom: 16 }}>
               {payoutSummaryChecks.map(({ label, value, ok }) => (
                 <div key={label} style={{ background: ok ? "var(--green-bg)" : "var(--red-bg)", border: `1px solid ${ok ? "var(--green-border)" : "var(--red-border)"}`, padding: "10px 12px" }}>
-                  <div className="check-label" style={{ fontSize: 13, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
+                  <div className="check-label" style={{ fontSize: 10, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
                   <div className="check-value" style={{ ...MONO, fontSize: 15, color: ok ? "var(--green)" : "var(--red)" }}>{value}</div>
                 </div>
               ))}
@@ -1055,20 +1028,20 @@ function PayoutCard({ payout, trader }) {
             {/* Payout cap progression */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ fontSize: 14, color: "var(--text2)" }}>Caps progressifs — {(accountSize/1000).toFixed(0)}K</span>
-                <span style={{ ...MONO, fontSize: 13, color: "var(--gold)" }}>Applicable : ${applicableCap.toLocaleString()}</span>
+                <span style={{ fontSize: 11, color: "var(--text2)" }}>Caps progressifs — {(accountSize/1000).toFixed(0)}K</span>
+                <span style={{ ...MONO, fontSize: 10, color: "var(--gold)" }}>Applicable : ${applicableCap.toLocaleString()}</span>
               </div>
               <div style={{ display: "flex", gap: 5 }}>
                 {capBreakdown.map(({ n, cap }) => (
                   <div key={n} style={{ flex: 1, padding: "7px 5px", borderRadius: 1, textAlign: "center", background: n === payout.withdrawalNumber ? "var(--gold-glow2)" : "var(--bg3)", border: `1px solid ${n === payout.withdrawalNumber ? "var(--gold)" : "var(--border)"}` }}>
                     <div style={{ ...MONO, fontSize: 8, color: n === payout.withdrawalNumber ? "var(--gold)" : "var(--text3)" }}>#{n}{n === 6 ? "+" : ""}</div>
-                    <div style={{ ...MONO, fontSize: 13, color: n === payout.withdrawalNumber ? "var(--gold)" : "var(--text2)", marginTop: 2 }}>${(cap/1000).toFixed(1)}k</div>
+                    <div style={{ ...MONO, fontSize: 10, color: n === payout.withdrawalNumber ? "var(--gold)" : "var(--text2)", marginTop: 2 }}>${(cap/1000).toFixed(1)}k</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ ...MONO, fontSize: 15, padding: "11px 14px", background: "var(--bg3)", borderRadius: 2, marginBottom: 14, color: "var(--text2)", border: "1px solid var(--border)" }}>
+            <div style={{ ...MONO, fontSize: 12, padding: "11px 14px", background: "var(--bg3)", borderRadius: 2, marginBottom: 14, color: "var(--text2)", border: "1px solid var(--border)" }}>
               Net payout : <span style={{ color: "var(--green)", fontSize: 14 }}>${capAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
               <span style={{ color: "var(--text3)" }}> = MIN(${ payout.profitSinceLast.toLocaleString()} × 90%, cap ${applicableCap.toLocaleString()}) — Retrait #{payout.withdrawalNumber}</span>
               {payout.profitSinceLast < 500 && <span style={{ color: "var(--red)", display: "block", marginTop: 4 }}>⚠ En dessous du minimum $500</span>}
@@ -1097,7 +1070,7 @@ function Payouts() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>PAYOUT MANAGEMENT</div>
-        <div style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginTop: 2 }}>{pending.length} pending · ${history.filter(p => p.status === "PAID").reduce((a, p) => a + p.amount, 0).toLocaleString()} total paid out</div>
+        <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{pending.length} pending · ${history.filter(p => p.status === "PAID").reduce((a, p) => a + p.amount, 0).toLocaleString()} total paid out</div>
       </div>
 
       {/* Pending */}
@@ -1108,12 +1081,12 @@ function Payouts() {
         ) : pending.map(trader => (
           <div key={trader.id} className="fade-up" style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "var(--gold)" }}>
+              <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "var(--gold)" }}>
                 {trader.name.split(" ").map(n => n[0]).join("")}
               </div>
               <div>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{trader.name}</span>
-                <span style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginLeft: 10 }}>{trader.country}</span>
+                <span style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginLeft: 10 }}>{trader.country}</span>
               </div>
             </div>
             <PayoutCard payout={trader.pendingPayout} trader={trader} />
@@ -1129,19 +1102,19 @@ function Payouts() {
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {["ID", "Trader", "Account", "Date", "Amount", "Withdrawal #", "Status"].map(h => (
-                  <th key={h} style={{ ...MONO, fontSize: 12, color: "var(--text3)", padding: "11px 16px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400 }}>{h}</th>
+                  <th key={h} style={{ ...MONO, fontSize: 9, color: "var(--text3)", padding: "11px 16px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {history.map((p, i) => (
                 <tr key={p.id} className="hover-row" style={{ borderBottom: i < history.length - 1 ? "1px solid var(--border)" : "none", transition: "background 0.1s" }}>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--text3)", padding: "12px 16px" }}>{p.id}</td>
-                  <td style={{ fontSize: 15, fontWeight: 500, padding: "12px 16px" }}>{p.traderName}</td>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--text2)", padding: "12px 16px" }}>{p.account}</td>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--text3)", padding: "12px 16px" }}>{p.date}</td>
-                  <td style={{ ...MONO, fontSize: 15, color: "var(--green)", padding: "12px 16px" }}>${p.amount.toLocaleString()}</td>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--text2)", padding: "12px 16px" }}>#{p.withdrawal}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "12px 16px" }}>{p.id}</td>
+                  <td style={{ fontSize: 12, fontWeight: 500, padding: "12px 16px" }}>{p.traderName}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 16px" }}>{p.account}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "12px 16px" }}>{p.date}</td>
+                  <td style={{ ...MONO, fontSize: 12, color: "var(--green)", padding: "12px 16px" }}>${p.amount.toLocaleString()}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 16px" }}>#{p.withdrawal}</td>
                   <td style={{ padding: "12px 16px" }}><Badge label={p.status} /></td>
                 </tr>
               ))}
@@ -1161,7 +1134,7 @@ function TraderProfile({ trader, onBack }) {
 
   return (
     <div className="fade-in">
-      <button onClick={onBack} style={{ ...MONO, fontSize: 14, color: "var(--text3)", background: "none", border: "none", marginBottom: 20, letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 6 }}>
+      <button onClick={onBack} style={{ ...MONO, fontSize: 11, color: "var(--text3)", background: "none", border: "none", marginBottom: 20, letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 6 }}>
         ← Back to Traders
       </button>
 
@@ -1176,8 +1149,8 @@ function TraderProfile({ trader, onBack }) {
             <Badge label={trader.kyc} />
             {trader.pendingPayout && <Badge label="PENDING_REVIEW" />}
           </div>
-          <div style={{ ...MONO, fontSize: 15, color: "var(--text3)" }}>{trader.email} · {trader.country}</div>
-          <div style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginTop: 4 }}>Joined {trader.joined} · Affiliate: {trader.affiliate} · ID: {trader.id}</div>
+          <div style={{ ...MONO, fontSize: 12, color: "var(--text3)" }}>{trader.email} · {trader.country}</div>
+          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 4 }}>Joined {trader.joined} · Affiliate: {trader.affiliate} · ID: {trader.id}</div>
         </div>
         <div style={{ display: "flex", gap: 16, textAlign: "center" }}>
           {[
@@ -1188,7 +1161,7 @@ function TraderProfile({ trader, onBack }) {
           ].map(({ label, val }) => (
             <div key={label} style={{ padding: "8px 16px", background: "var(--bg2)", borderRadius: 2, border: "1px solid var(--border)" }}>
               <div style={{ ...MONO, fontSize: 16, color: "var(--gold)" }}>{val}</div>
-              <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 3, letterSpacing: "0.05em" }}>{label}</div>
+              <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 3, letterSpacing: "0.05em" }}>{label}</div>
             </div>
           ))}
         </div>
@@ -1197,7 +1170,7 @@ function TraderProfile({ trader, onBack }) {
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "var(--bg2)", padding: 4, borderRadius: 2, width: "fit-content", border: "1px solid var(--border)" }}>
         {[["accounts", "Accounts"], ["payouts", "Payout History"], ["activity", "Activity Log"], ["notes", "Notes"]].map(([id, label]) => (
-          <button key={id} onClick={() => setTab(id)} style={{ padding: "8px 18px", borderRadius: 2, border: "none", background: tab === id ? "var(--bg4)" : "transparent", color: tab === id ? "var(--text)" : "var(--text3)", fontSize: 15, fontWeight: tab === id ? 600 : 400, transition: "all 0.15s" }}>
+          <button key={id} onClick={() => setTab(id)} style={{ padding: "8px 18px", borderRadius: 2, border: "none", background: tab === id ? "var(--bg4)" : "transparent", color: tab === id ? "var(--text)" : "var(--text3)", fontSize: 12, fontWeight: tab === id ? 600 : 400, transition: "all 0.15s" }}>
             {label}
           </button>
         ))}
@@ -1210,35 +1183,35 @@ function TraderProfile({ trader, onBack }) {
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {["Account ID", "Type", "Size", "Status", "P&L", "Target", "Days", "Consistency", "Drawdown $", "Scalping", "Purchased"].map(h => (
-                  <th key={h} style={{ ...MONO, fontSize: 12, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.06em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} style={{ ...MONO, fontSize: 9, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.06em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {trader.accounts.map((a, i) => (
                 <tr key={a.id} className="hover-row" style={{ borderBottom: i < trader.accounts.length - 1 ? "1px solid var(--border)" : "none" }}>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--text2)", padding: "12px 14px" }}>{a.id}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 14px" }}>{a.id}</td>
                   <td style={{ padding: "12px 14px" }}><Badge label={a.type} /></td>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--gold)", padding: "12px 14px" }}>${a.size.toLocaleString()}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--gold)", padding: "12px 14px" }}>${a.size.toLocaleString()}</td>
                   <td style={{ padding: "12px 14px" }}><Badge label={a.status} /></td>
-                  <td style={{ ...MONO, fontSize: 14, color: a.profit >= 0 ? "var(--green)" : "var(--red)", padding: "12px 14px" }}>${a.profit.toLocaleString()}</td>
-                  <td style={{ ...MONO, fontSize: 14, color: a.profitTarget ? (a.profit >= a.profitTarget ? "var(--green)" : "var(--orange)") : "var(--text3)", padding: "12px 14px" }}>{a.profitTarget ? "$" + a.profitTarget.toLocaleString() : "—"}</td>
-                  <td style={{ ...MONO, fontSize: 14, color: a.days >= 5 ? "var(--green)" : "var(--red)", padding: "12px 14px" }}>{a.days}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: a.profit >= 0 ? "var(--green)" : "var(--red)", padding: "12px 14px" }}>${a.profit.toLocaleString()}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: a.profitTarget ? (a.profit >= a.profitTarget ? "var(--green)" : "var(--orange)") : "var(--text3)", padding: "12px 14px" }}>{a.profitTarget ? "$" + a.profitTarget.toLocaleString() : "—"}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: a.days >= 5 ? "var(--green)" : "var(--red)", padding: "12px 14px" }}>{a.days}</td>
                   <td style={{ padding: "12px 14px", minWidth: 100 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ ...MONO, fontSize: 14, color: a.consistency >= 30 ? "var(--green)" : "var(--red)", minWidth: 34 }}>{a.consistency}%</span>
+                      <span style={{ ...MONO, fontSize: 11, color: a.consistency >= 30 ? "var(--green)" : "var(--red)", minWidth: 34 }}>{a.consistency}%</span>
                       <div style={{ flex: 1 }}><ProgressBar value={a.consistency} max={100} color="var(--green)" height={3} /></div>
                     </div>
                   </td>
                   <td style={{ padding: "12px 14px", minWidth: 120 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ ...MONO, fontSize: 13, color: a.currentDrawdown <= a.maxDrawdown ? "var(--green)" : "var(--red)", minWidth: 50 }}>${a.currentDrawdown.toLocaleString()}</span>
+                      <span style={{ ...MONO, fontSize: 10, color: a.currentDrawdown <= a.maxDrawdown ? "var(--green)" : "var(--red)", minWidth: 50 }}>${a.currentDrawdown.toLocaleString()}</span>
                       <div style={{ flex: 1 }}><ProgressBar value={a.currentDrawdown} max={a.maxDrawdown} color={a.currentDrawdown > a.maxDrawdown * 0.75 ? "var(--orange)" : "var(--green)"} height={3} /></div>
-                      <span style={{ ...MONO, fontSize: 12, color: "var(--text3)" }}>/${a.maxDrawdown.toLocaleString()}</span>
+                      <span style={{ ...MONO, fontSize: 9, color: "var(--text3)" }}>/${a.maxDrawdown.toLocaleString()}</span>
                     </div>
                   </td>
-                  <td style={{ ...MONO, fontSize: 14, color: a.scalping <= 40 ? "var(--text2)" : "var(--red)", padding: "12px 14px" }}>{a.scalping}%</td>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--text3)", padding: "12px 14px", whiteSpace: "nowrap" }}>{a.purchaseDate}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: a.scalping <= 40 ? "var(--text2)" : "var(--red)", padding: "12px 14px" }}>{a.scalping}%</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "12px 14px", whiteSpace: "nowrap" }}>{a.purchaseDate}</td>
                 </tr>
               ))}
             </tbody>
@@ -1257,18 +1230,18 @@ function TraderProfile({ trader, onBack }) {
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--border)" }}>
                     {["ID", "Date", "Account", "Amount", "Withdrawal #", "Status"].map(h => (
-                      <th key={h} style={{ ...MONO, fontSize: 12, color: "var(--text3)", padding: "11px 16px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400 }}>{h}</th>
+                      <th key={h} style={{ ...MONO, fontSize: 9, color: "var(--text3)", padding: "11px 16px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {trader.payouts.map((p, i) => (
                     <tr key={p.id} className="hover-row" style={{ borderBottom: i < trader.payouts.length - 1 ? "1px solid var(--border)" : "none" }}>
-                      <td style={{ ...MONO, fontSize: 14, color: "var(--text3)", padding: "12px 16px" }}>{p.id}</td>
-                      <td style={{ ...MONO, fontSize: 14, color: "var(--text2)", padding: "12px 16px" }}>{p.date}</td>
-                      <td style={{ ...MONO, fontSize: 14, color: "var(--text2)", padding: "12px 16px" }}>{p.account}</td>
-                      <td style={{ ...MONO, fontSize: 15, color: "var(--green)", padding: "12px 16px" }}>${p.amount.toLocaleString()}</td>
-                      <td style={{ ...MONO, fontSize: 14, color: "var(--text2)", padding: "12px 16px" }}>#{p.withdrawal}</td>
+                      <td style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "12px 16px" }}>{p.id}</td>
+                      <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 16px" }}>{p.date}</td>
+                      <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 16px" }}>{p.account}</td>
+                      <td style={{ ...MONO, fontSize: 12, color: "var(--green)", padding: "12px 16px" }}>${p.amount.toLocaleString()}</td>
+                      <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 16px" }}>#{p.withdrawal}</td>
                       <td style={{ padding: "12px 16px" }}><Badge label={p.status} /></td>
                     </tr>
                   ))}
@@ -1292,7 +1265,7 @@ function TraderProfile({ trader, onBack }) {
                 </div>
                 <div>
                   <div style={{ fontSize: 13 }}>{a.note}</div>
-                  <div style={{ ...MONO, fontSize: 13, color: "var(--text3)", marginTop: 4 }}>{a.date}</div>
+                  <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{a.date}</div>
                 </div>
               </div>
             );
@@ -1331,7 +1304,7 @@ function KycToggle({ value, onChange }) {
       padding: "3px 10px", borderRadius: 1, cursor: "pointer",
       background: cfg.bg, border: `1px solid ${cfg.border}`,
       color: cfg.color, transition: "all 0.15s",
-      fontFamily: "'DM Mono', monospace", fontSize: 13, fontWeight: 500, letterSpacing: "0.06em",
+      fontFamily: "'DM Mono', monospace", fontSize: 10, fontWeight: 500, letterSpacing: "0.06em",
       whiteSpace: "nowrap",
     }}>
       <span style={{ fontSize: 12 }}>{cfg.icon}</span>
@@ -1369,15 +1342,15 @@ function TradersPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>TRADERS</div>
-          <div style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginTop: 2 }}>{TRADERS.length} registered · {TRADERS.filter(t => t.accounts.some(a => a.status === "FUNDED")).length} funded · {Object.values(kycStates).filter(v => v !== "VERIFIED").length} KYC pending</div>
+          <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{TRADERS.length} registered · {TRADERS.filter(t => t.accounts.some(a => a.status === "FUNDED")).length} funded · {Object.values(kycStates).filter(v => v !== "VERIFIED").length} KYC pending</div>
         </div>
         <div style={{ flex: 1 }} />
         <input placeholder="Search name, email, ID…" value={search} onChange={e => setSearch(e.target.value)}
-          style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 2, padding: "8px 14px", color: "var(--text)", fontSize: 15, outline: "none", width: 220, ...MONO }} />
+          style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 2, padding: "8px 14px", color: "var(--text)", fontSize: 12, outline: "none", width: 220, ...MONO }} />
         {["ALL", "FUNDED", "PENDING", "KYC PENDING"].map(f => (
-          <button key={f} onClick={() => setFilter(f === "KYC PENDING" ? "KYC_PENDING" : f)} style={{ fontFamily: "'DM Mono', monospace", fontSize: 13, padding: "6px 12px", borderRadius: 2, border: "1px solid var(--border)", background: filter === (f === "KYC PENDING" ? "KYC_PENDING" : f) ? "var(--gold-glow2)" : "var(--bg2)", color: filter === (f === "KYC PENDING" ? "KYC_PENDING" : f) ? "var(--gold)" : "var(--text2)", whiteSpace: "nowrap" }}>{f}</button>
+          <button key={f} onClick={() => setFilter(f === "KYC PENDING" ? "KYC_PENDING" : f)} style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, padding: "6px 12px", borderRadius: 2, border: "1px solid var(--border)", background: filter === (f === "KYC PENDING" ? "KYC_PENDING" : f) ? "var(--gold-glow2)" : "var(--bg2)", color: filter === (f === "KYC PENDING" ? "KYC_PENDING" : f) ? "var(--gold)" : "var(--text2)", whiteSpace: "nowrap" }}>{f}</button>
         ))}
-        <select value={sort} onChange={e => setSort(e.target.value)} style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 2, padding: "7px 12px", color: "var(--text2)", fontSize: 15, outline: "none", ...MONO }}>
+        <select value={sort} onChange={e => setSort(e.target.value)} style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 2, padding: "7px 12px", color: "var(--text2)", fontSize: 12, outline: "none", ...MONO }}>
           <option value="withdrawn">Sort: Withdrawn</option>
           <option value="joined">Sort: Joined</option>
           <option value="name">Sort: Name</option>
@@ -1385,7 +1358,7 @@ function TradersPage() {
       </div>
 
       <div style={{ marginBottom: 6 }}>
-        <div style={{ ...MONO, fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>
+        <div style={{ ...MONO, fontSize: 9, color: "var(--text3)", marginBottom: 8 }}>
           KYC — cliquez sur le statut pour le changer : ○ Not done → ◐ Pending → ● Verified
         </div>
       </div>
@@ -1394,7 +1367,7 @@ function TradersPage() {
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
               {["Trader", "Country", "KYC", "Programmes", "Retraits", "Total Retiré", "Affiliate", "Joined", ""].map(h => (
-                <th key={h} style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
+                <th key={h} style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -1409,16 +1382,16 @@ function TradersPage() {
                   style={{ borderBottom: i < list.length - 1 ? "1px solid var(--border)" : "none", cursor: "pointer" }}>
                   <td style={{ padding: "13px 14px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "var(--gold)", flexShrink: 0 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg3)", border: "1px solid var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "var(--gold)", flexShrink: 0 }}>
                         {trader.name.split(" ").map(n => n[0]).join("")}
                       </div>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600 }}>{trader.name}</div>
-                        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 13, color: "var(--text3)" }}>{trader.email}</div>
+                        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "var(--text3)" }}>{trader.email}</div>
                       </div>
                     </div>
                   </td>
-                  <td style={{ fontSize: 15, color: "var(--text2)", padding: "13px 14px", whiteSpace: "nowrap" }}>{trader.country}</td>
+                  <td style={{ fontSize: 12, color: "var(--text2)", padding: "13px 14px", whiteSpace: "nowrap" }}>{trader.country}</td>
                   <td style={{ padding: "13px 14px" }} onClick={e => e.stopPropagation()}>
                     <KycToggle value={kycStates[trader.id]} onChange={val => setKyc(trader.id, val)} />
                   </td>
@@ -1429,7 +1402,7 @@ function TradersPage() {
                         return (
                           <span key={type} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
                             <Badge label={type} />
-                            {count > 1 && <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: "var(--text3)" }}>×{count}</span>}
+                            {count > 1 && <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "var(--text3)" }}>×{count}</span>}
                           </span>
                         );
                       })}
@@ -1437,30 +1410,30 @@ function TradersPage() {
                   </td>
                   <td style={{ padding: "13px 14px" }}>
                     {maxWithdrawal === 0 && !pendingWithdrawal ? (
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 14, color: "var(--text3)" }}>—</span>
+                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "var(--text3)" }}>—</span>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         {maxWithdrawal > 0 && (
-                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 13, color: "var(--green)", background: "var(--green-bg)", border: "1px solid var(--green-border)", padding: "2px 8px", borderRadius: 1, whiteSpace: "nowrap" }}>
+                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "var(--green)", background: "var(--green-bg)", border: "1px solid var(--green-border)", padding: "2px 8px", borderRadius: 1, whiteSpace: "nowrap" }}>
                             ✓ Retrait #{maxWithdrawal}
                           </span>
                         )}
                         {pendingWithdrawal && (
-                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 13, color: "var(--orange)", background: "var(--orange-bg)", border: "1px solid var(--orange-border)", padding: "2px 8px", borderRadius: 1, whiteSpace: "nowrap" }}>
+                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "var(--orange)", background: "var(--orange-bg)", border: "1px solid var(--orange-border)", padding: "2px 8px", borderRadius: 1, whiteSpace: "nowrap" }}>
                             ⏳ #{pendingWithdrawal} en cours
                           </span>
                         )}
                       </div>
                     )}
                   </td>
-                  <td style={{ fontFamily: "'DM Mono', monospace", fontSize: 15, color: trader.totalWithdrawn > 0 ? "var(--gold)" : "var(--text3)", padding: "13px 14px", whiteSpace: "nowrap" }}>
+                  <td style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: trader.totalWithdrawn > 0 ? "var(--gold)" : "var(--text3)", padding: "13px 14px", whiteSpace: "nowrap" }}>
                     {trader.totalWithdrawn > 0 ? "$" + trader.totalWithdrawn.toLocaleString() : "—"}
                   </td>
-                  <td style={{ fontSize: 14, color: "var(--text3)", padding: "13px 14px", whiteSpace: "nowrap" }}>{trader.affiliate}</td>
-                  <td style={{ fontFamily: "'DM Mono', monospace", fontSize: 14, color: "var(--text3)", padding: "13px 14px", whiteSpace: "nowrap" }}>{trader.joined}</td>
+                  <td style={{ fontSize: 11, color: "var(--text3)", padding: "13px 14px", whiteSpace: "nowrap" }}>{trader.affiliate}</td>
+                  <td style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "var(--text3)", padding: "13px 14px", whiteSpace: "nowrap" }}>{trader.joined}</td>
                   <td style={{ padding: "13px 14px" }}>
                     {hasPending
-                      ? <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 13, color: "var(--orange)" }}>⚠ Pending</span>
+                      ? <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "var(--orange)" }}>⚠ Pending</span>
                       : <span style={{ color: "var(--text3)", fontSize: 13 }}>→</span>
                     }
                   </td>
@@ -1488,7 +1461,7 @@ function RiskMonitor() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>RISK MONITOR</div>
-        <div style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginTop: 2 }}>Real-time rule compliance overview</div>
+        <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>Real-time rule compliance overview</div>
       </div>
 
       {/* Summary */}
@@ -1500,7 +1473,7 @@ function RiskMonitor() {
           { label: "Accounts Monitored", value: allAccounts.length, color: "var(--text)" },
         ].map(({ label, value, color }) => (
           <div key={label} style={{ flex: 1, background: "var(--bg1)", border: "1px solid var(--border)", padding: "18px 20px" }}>
-            <div style={{ fontSize: 13, color: "var(--text3)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+            <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
             <div style={{ ...MONO, fontSize: 26, color, fontWeight: 300 }}>{value}</div>
           </div>
         ))}
@@ -1518,13 +1491,13 @@ function RiskMonitor() {
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{a.trader}</span>
                 <Badge label={a.type} />
-                <span style={{ ...MONO, fontSize: 14, color: "var(--text3)" }}>{a.id}</span>
+                <span style={{ ...MONO, fontSize: 11, color: "var(--text3)" }}>{a.id}</span>
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {a.currentDrawdown > a.maxDrawdown * 0.7 && <span style={{ ...MONO, fontSize: 13, color: "var(--orange)", background: "var(--orange-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--orange-border)" }}>Drawdown ${a.currentDrawdown.toLocaleString()} / ${a.maxDrawdown.toLocaleString()}</span>}
-                {a.scalping > 35 && <span style={{ ...MONO, fontSize: 13, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>Scalping {a.scalping}%</span>}
-                {a.flipping && <span style={{ ...MONO, fontSize: 13, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>Flipping detected</span>}
-                {a.fraud && <span style={{ ...MONO, fontSize: 13, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>Fraud flag</span>}
+                {a.currentDrawdown > a.maxDrawdown * 0.7 && <span style={{ ...MONO, fontSize: 10, color: "var(--orange)", background: "var(--orange-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--orange-border)" }}>Drawdown ${a.currentDrawdown.toLocaleString()} / ${a.maxDrawdown.toLocaleString()}</span>}
+                {a.scalping > 35 && <span style={{ ...MONO, fontSize: 10, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>Scalping {a.scalping}%</span>}
+                {a.flipping && <span style={{ ...MONO, fontSize: 10, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>Flipping detected</span>}
+                {a.fraud && <span style={{ ...MONO, fontSize: 10, color: "var(--red)", background: "var(--red-bg)", padding: "2px 8px", borderRadius: 1, border: "1px solid var(--red-border)" }}>Fraud flag</span>}
               </div>
             </div>
           </div>
@@ -1539,35 +1512,35 @@ function RiskMonitor() {
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {["Account", "Trader", "Type", "Drawdown", "Consistency", "Scalping", "Flipping", "Fraud", "Status"].map(h => (
-                  <th key={h} style={{ ...MONO, fontSize: 12, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} style={{ ...MONO, fontSize: 9, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.07em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {allAccounts.map((a, i) => (
                 <tr key={a.id} className="hover-row" style={{ borderBottom: i < allAccounts.length - 1 ? "1px solid var(--border)" : "none" }}>
-                  <td style={{ ...MONO, fontSize: 14, color: "var(--text2)", padding: "11px 14px" }}>{a.id}</td>
-                  <td style={{ fontSize: 15, padding: "11px 14px" }}>{a.trader}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "11px 14px" }}>{a.id}</td>
+                  <td style={{ fontSize: 12, padding: "11px 14px" }}>{a.trader}</td>
                   <td style={{ padding: "11px 14px" }}><Badge label={a.type} /></td>
                   <td style={{ padding: "11px 14px", minWidth: 130 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ ...MONO, fontSize: 13, color: a.currentDrawdown > a.maxDrawdown * 0.8 ? "var(--red)" : "var(--green)", minWidth: 44 }}>${a.currentDrawdown.toLocaleString()}</span>
+                      <span style={{ ...MONO, fontSize: 10, color: a.currentDrawdown > a.maxDrawdown * 0.8 ? "var(--red)" : "var(--green)", minWidth: 44 }}>${a.currentDrawdown.toLocaleString()}</span>
                       <div style={{ flex: 1 }}><ProgressBar value={a.currentDrawdown} max={a.maxDrawdown} color={a.currentDrawdown > a.maxDrawdown * 0.75 ? "var(--red)" : "var(--green)"} height={4} /></div>
-                      <span style={{ ...MONO, fontSize: 12, color: "var(--text3)" }}>/${a.maxDrawdown.toLocaleString()}</span>
+                      <span style={{ ...MONO, fontSize: 9, color: "var(--text3)" }}>/${a.maxDrawdown.toLocaleString()}</span>
                     </div>
                   </td>
                   <td style={{ padding: "11px 14px", minWidth: 100 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ ...MONO, fontSize: 14, color: a.consistency >= 30 ? "var(--green)" : "var(--red)", minWidth: 34 }}>{a.consistency}%</span>
+                      <span style={{ ...MONO, fontSize: 11, color: a.consistency >= 30 ? "var(--green)" : "var(--red)", minWidth: 34 }}>{a.consistency}%</span>
                       <div style={{ flex: 1 }}><ProgressBar value={a.consistency} max={100} color={a.consistency >= 30 ? "var(--green)" : "var(--red)"} height={4} /></div>
                     </div>
                   </td>
-                  <td style={{ ...MONO, fontSize: 14, color: a.scalping > 40 ? "var(--red)" : a.scalping > 30 ? "var(--orange)" : "var(--text2)", padding: "11px 14px" }}>{a.scalping}%</td>
+                  <td style={{ ...MONO, fontSize: 11, color: a.scalping > 40 ? "var(--red)" : a.scalping > 30 ? "var(--orange)" : "var(--text2)", padding: "11px 14px" }}>{a.scalping}%</td>
                   <td style={{ padding: "11px 14px" }}>
-                    <span style={{ ...MONO, fontSize: 13, color: a.flipping ? "var(--red)" : "var(--green)" }}>{a.flipping ? "⚠ YES" : "✓ NO"}</span>
+                    <span style={{ ...MONO, fontSize: 10, color: a.flipping ? "var(--red)" : "var(--green)" }}>{a.flipping ? "⚠ YES" : "✓ NO"}</span>
                   </td>
                   <td style={{ padding: "11px 14px" }}>
-                    <span style={{ ...MONO, fontSize: 13, color: a.fraud ? "var(--red)" : "var(--green)" }}>{a.fraud ? "⚠ YES" : "✓ NO"}</span>
+                    <span style={{ ...MONO, fontSize: 10, color: a.fraud ? "var(--red)" : "var(--green)" }}>{a.fraud ? "⚠ YES" : "✓ NO"}</span>
                   </td>
                   <td style={{ padding: "11px 14px" }}><Badge label={a.status} /></td>
                 </tr>
@@ -1601,7 +1574,7 @@ const PAYOUT_CAPS_SETTINGS = {
 
 function Settings() {
   const [rules, setRules] = useState(DEFAULT_RULES);
-  const [caps, setCaps] = useState(PAYOUT_CAPS_SETTINGS);
+  const [caps, setCaps] = useState(PAYOUT_CAPS);
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState("rules");
 
@@ -1619,12 +1592,12 @@ function Settings() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 26, fontWeight: 700, letterSpacing: "0.06em" }}>SETTINGS</div>
-        <div style={{ ...MONO, fontSize: 14, color: "var(--text3)", marginTop: 2 }}>Program rules & configuration</div>
+        <div style={{ ...MONO, fontSize: 11, color: "var(--text3)", marginTop: 2 }}>Program rules & configuration</div>
       </div>
 
       <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "var(--bg2)", padding: 4, borderRadius: 2, width: "fit-content", border: "1px solid var(--border)" }}>
         {[["rules", "Trading Rules"], ["caps", "Payout Caps"], ["instruments", "Instruments"]].map(([id, label]) => (
-          <button key={id} onClick={() => setTab(id)} style={{ padding: "8px 18px", borderRadius: 2, border: "none", background: tab === id ? "var(--bg4)" : "transparent", color: tab === id ? "var(--text)" : "var(--text3)", fontSize: 15, fontWeight: tab === id ? 600 : 400 }}>
+          <button key={id} onClick={() => setTab(id)} style={{ padding: "8px 18px", borderRadius: 2, border: "none", background: tab === id ? "var(--bg4)" : "transparent", color: tab === id ? "var(--text)" : "var(--text3)", fontSize: 12, fontWeight: tab === id ? 600 : 400 }}>
             {label}
           </button>
         ))}
@@ -1634,14 +1607,14 @@ function Settings() {
         <div className="fade-in" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           {sections.map(({ title, fields }) => (
             <div key={title} style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "20px 22px" }}>
-              <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>{title}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>{title}</div>
               {fields.map(([key, label, unit]) => (
                 <div key={key} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 14, color: "var(--text3)", letterSpacing: "0.06em", marginBottom: 6, textTransform: "uppercase" }}>{label}</div>
+                  <div style={{ fontSize: 11, color: "var(--text3)", letterSpacing: "0.06em", marginBottom: 6, textTransform: "uppercase" }}>{label}</div>
                   <div style={{ display: "flex", background: "var(--bg2)", border: "1px solid var(--border2)", borderRadius: 2, overflow: "hidden" }}>
                     <input type="number" value={rules[key]} onChange={e => setRules(r => ({ ...r, [key]: +e.target.value }))}
                       style={{ flex: 1, background: "transparent", border: "none", padding: "10px 14px", color: "var(--gold)", fontSize: 15, outline: "none", ...MONO }} />
-                    <span style={{ ...MONO, fontSize: 14, color: "var(--text3)", padding: "0 14px", display: "flex", alignItems: "center", borderLeft: "1px solid var(--border2)" }}>{unit}</span>
+                    <span style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "0 14px", display: "flex", alignItems: "center", borderLeft: "1px solid var(--border2)" }}>{unit}</span>
                   </div>
                 </div>
               ))}
@@ -1652,18 +1625,18 @@ function Settings() {
 
       {tab === "caps" && (
         <div className="fade-in">
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Caps Progressifs par Taille de Compte</div>
+          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Caps Progressifs par Taille de Compte</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
             {Object.entries(PAYOUT_CAPS_SETTINGS).map(([size, rows]) => (
               <div key={size} style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "18px 20px" }}>
-                <div style={{ ...MONO, fontSize: 14, color: "var(--gold)", marginBottom: 14, fontWeight: 600 }}>{size} — Min $500</div>
+                <div style={{ ...MONO, fontSize: 11, color: "var(--gold)", marginBottom: 14, fontWeight: 600 }}>{size} — Min $500</div>
                 {rows.map((c, i) => (
                   <div key={c.n} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                    <div style={{ ...MONO, fontSize: 13, color: "var(--text3)" }}>Retrait #{c.n}</div>
+                    <div style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>Retrait #{c.n}</div>
                     <div style={{ display: "flex", background: "var(--bg2)", border: "1px solid var(--border2)", borderRadius: 1, overflow: "hidden" }}>
                       <input type="number" defaultValue={c.cap}
                         style={{ width: 70, background: "transparent", border: "none", padding: "6px 10px", color: "var(--gold)", fontSize: 13, outline: "none", ...MONO, textAlign: "right" }} />
-                      <span style={{ ...MONO, fontSize: 12, color: "var(--text3)", padding: "0 8px", display: "flex", alignItems: "center", borderLeft: "1px solid var(--border2)" }}>$</span>
+                      <span style={{ ...MONO, fontSize: 9, color: "var(--text3)", padding: "0 8px", display: "flex", alignItems: "center", borderLeft: "1px solid var(--border2)" }}>$</span>
                     </div>
                   </div>
                 ))}
@@ -1675,12 +1648,12 @@ function Settings() {
 
       {tab === "instruments" && (
         <div className="fade-in" style={{ background: "var(--bg1)", border: "1px solid var(--border)", padding: "24px 26px", maxWidth: 500 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Allowed Instruments</div>
+          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.05em", color: "var(--text2)", marginBottom: 16, textTransform: "uppercase" }}>Allowed Instruments</div>
           {[["NQ", "Nasdaq 100 Futures"], ["ES", "S&P 500 Futures"], ["YM", "Dow Jones Futures"], ["RTY", "Russell 2000 Futures"], ["GC", "Gold Futures"], ["CL", "Crude Oil Futures"], ["SI", "Silver Futures"], ["NG", "Natural Gas Futures"], ["BUND", "German Bund Futures"]].map(([sym, name]) => (
             <div key={sym} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 2, marginBottom: 6, background: "var(--bg2)", border: "1px solid var(--border)" }}>
               <input type="checkbox" defaultChecked style={{ accentColor: "var(--gold)", width: 14, height: 14 }} />
-              <span style={{ ...MONO, fontSize: 15, color: "var(--gold)", minWidth: 50 }}>{sym}</span>
-              <span style={{ fontSize: 15, color: "var(--text2)" }}>{name}</span>
+              <span style={{ ...MONO, fontSize: 12, color: "var(--gold)", minWidth: 50 }}>{sym}</span>
+              <span style={{ fontSize: 12, color: "var(--text2)" }}>{name}</span>
             </div>
           ))}
         </div>
@@ -1735,7 +1708,7 @@ function MobileBottomNav({ page, setPage }) {
             <span style={{ fontSize: 14 }}>{n.icon}</span>
             <span style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: 12, letterSpacing: "0.08em",
+              fontSize: 9, letterSpacing: "0.08em",
               color: active ? "var(--gold)" : "var(--text3)",
             }}>{n.label.toUpperCase()}</span>
             {badge > 0 && (
@@ -1768,6 +1741,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Load real data from backend after login
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -1779,6 +1753,7 @@ export default function App() {
       const tradersList = tradersRes?.data || [];
       const accountsList = accountsRes?.data || [];
 
+      // Group accounts by trader_id
       const accountsByTrader = {};
       for (const acc of accountsList) {
         const tid = acc.trader_id;
@@ -1803,12 +1778,18 @@ export default function App() {
           firstPayoutTarget: acc.first_payout_target || null,
           bufferLock: acc.buffer_lock || null,
           latentLossLimit: acc.latent_loss_limit || null,
-          consistency: 0, scalping: 0, flipping: false,
-          qualifyingDays: 0, cycleDays: 0, days: 0, latentLoss: 0,
+          consistency: 0,
+          scalping: 0,
+          flipping: false,
+          qualifyingDays: 0,
+          cycleDays: 0,
+          days: 0,
+          latentLoss: 0,
           purchaseDate: acc.purchase_date,
         });
       }
 
+      // Build TRADERS array
       TRADERS = tradersList.map(t => ({
         id: String(t.id),
         volumetricaUserId: t.volumetrica_user_id,
