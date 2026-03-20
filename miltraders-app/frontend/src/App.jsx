@@ -556,6 +556,7 @@ const NAV_ITEMS = [
   { id: "reviews", label: "Reviews", emoji: "◉" },
   { id: "payouts", label: "Payouts", emoji: "◎" },
   { id: "traders", label: "Traders", emoji: "◷" },
+  { id: "failed", label: "Failed", emoji: "✕" },
   { id: "risk", label: "Risk Monitor", emoji: "◬" },
   { id: "settings", label: "Settings", emoji: "⊕" },
 ];
@@ -563,7 +564,8 @@ const NAV_ITEMS = [
 function Sidebar({ page, setPage }) {
   const pendingReviews = TRADERS.flatMap(t => t.accounts.filter(a => a.status === "PASSED")).length;
   const pendingPayouts = TRADERS.filter(t => t.pendingPayout).length;
-  const badges = { reviews: pendingReviews, payouts: pendingPayouts };
+  const failedCount = TRADERS.flatMap(t => t.accounts.filter(a => a.status === "FAILED")).length;
+  const badges = { reviews: pendingReviews, payouts: pendingPayouts, failed: failedCount };
 
   return (
     <aside className="sidebar" style={{ width: 210, background: "var(--bg0)", borderRight: "1px solid var(--border)", height: "100vh", position: "fixed", left: 0, top: 0, display: "flex", flexDirection: "column", zIndex: 40 }}>
@@ -601,7 +603,7 @@ function Sidebar({ page, setPage }) {
               <span style={{ ...MONO, fontSize: 10, opacity: active ? 0.8 : 0.35, color: active ? "var(--gold)" : "var(--text2)", minWidth: 14 }}>{n.emoji}</span>
               <span style={{ flex: 1, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, letterSpacing: "0.06em" }}>{n.label.toUpperCase()}</span>
               {badge > 0 && (
-                <span style={{ ...MONO, fontSize: 9, background: "var(--gold)", color: "#000", borderRadius: 2, padding: "1px 7px", fontWeight: 700 }}>{badge}</span>
+                <span style={{ ...MONO, fontSize: 9, background: n.id === "failed" ? "var(--red)" : "var(--gold)", color: n.id === "failed" ? "#fff" : "#000", borderRadius: 2, padding: "1px 7px", fontWeight: 700 }}>{badge}</span>
               )}
             </button>
           );
@@ -627,12 +629,13 @@ function Overview({ setPage }) {
   const pendingPayouts = TRADERS.filter(t => t.pendingPayout).length;
   const totalTraders = TRADERS.length;
 
+  const activeAccounts = allAccounts.filter(a => a.status !== "FAILED");
   const typeBreakdown = [
-    { label: "CHALLENGE", value: allAccounts.filter(a => a.type === "CHALLENGE" && a.accountCategory === "EVAL").length, color: "var(--purple)" },
-    { label: "CHALLENGE FUNDED", value: allAccounts.filter(a => a.type === "CHALLENGE" && a.accountCategory === "FUNDED").length, color: "var(--green)" },
-    { label: "PRO", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "EVAL").length, color: "var(--gold)" },
-    { label: "PRO FUNDED", value: allAccounts.filter(a => a.type === "PRO" && a.accountCategory === "FUNDED").length, color: "#22d3ee" },
-    { label: "INSTANT", value: allAccounts.filter(a => a.type === "INSTANT").length, color: "var(--blue)" },
+    { label: "CHALLENGE", value: activeAccounts.filter(a => a.type === "CHALLENGE" && a.accountCategory === "EVAL").length, color: "var(--purple)" },
+    { label: "CHALLENGE FUNDED", value: activeAccounts.filter(a => a.type === "CHALLENGE" && a.accountCategory === "FUNDED").length, color: "var(--green)" },
+    { label: "PRO", value: activeAccounts.filter(a => a.type === "PRO" && a.accountCategory === "EVAL").length, color: "var(--gold)" },
+    { label: "PRO FUNDED", value: activeAccounts.filter(a => a.type === "PRO" && a.accountCategory === "FUNDED").length, color: "#22d3ee" },
+    { label: "INSTANT", value: activeAccounts.filter(a => a.type === "INSTANT").length, color: "var(--blue)" },
   ].filter(t => t.value > 0);
 
   const recentActivity = TRADERS.flatMap(t =>
@@ -1782,12 +1785,116 @@ function Settings() {
   );
 }
 
+// ─── FAILED ACCOUNTS PAGE ────────────────────────────────────────────────────
+function FailedAccounts() {
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [catFilter, setCatFilter] = useState("ALL");
+
+  // Gather all failed accounts across all traders
+  const allFailed = TRADERS.flatMap(t =>
+    t.accounts.filter(a => a.status === "FAILED").map(a => ({ ...a, traderName: t.name, traderEmail: t.email, traderId: t.id }))
+  );
+
+  let filtered = allFailed;
+  if (typeFilter !== "ALL") filtered = filtered.filter(a => a.type === typeFilter);
+  if (catFilter !== "ALL") filtered = filtered.filter(a => a.accountCategory === catFilter);
+  if (search) {
+    const s = search.toLowerCase();
+    filtered = filtered.filter(a => a.id?.toLowerCase().includes(s) || a.traderName?.toLowerCase().includes(s) || a.traderEmail?.toLowerCase().includes(s));
+  }
+
+  const evalFailed = allFailed.filter(a => a.accountCategory === "EVAL").length;
+  const fundedFailed = allFailed.filter(a => a.accountCategory === "FUNDED").length;
+  const challengeFailed = allFailed.filter(a => a.type === "CHALLENGE").length;
+  const proFailed = allFailed.filter(a => a.type === "PRO").length;
+  const instantFailed = allFailed.filter(a => a.type === "INSTANT").length;
+
+  return (
+    <div>
+      {/* KPI row */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+        <KpiCard label="Total Failed" value={allFailed.length} sub="All accounts" color="var(--red)" delay={0.05} />
+        <KpiCard label="Eval Failed" value={evalFailed} sub="Challenge phase" color="var(--orange)" delay={0.1} />
+        <KpiCard label="Funded Failed" value={fundedFailed} sub="Funded phase" color="var(--purple)" delay={0.15} />
+      </div>
+
+      {/* Filters */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search account, trader..." style={{
+          ...MONO, fontSize: 11, padding: "8px 14px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 2,
+          color: "var(--text)", outline: "none", width: 220, letterSpacing: "0.04em"
+        }} />
+        {["ALL", "CHALLENGE", "PRO", "INSTANT"].map(t => (
+          <button key={t} onClick={() => setTypeFilter(t)} style={{
+            ...MONO, fontSize: 10, padding: "6px 14px", borderRadius: 2,
+            border: "1px solid " + (typeFilter === t ? "var(--gold)" : "var(--border)"),
+            background: typeFilter === t ? "rgba(234,179,8,0.08)" : "var(--bg2)",
+            color: typeFilter === t ? "var(--gold)" : "var(--text3)", letterSpacing: "0.05em", transition: "all 0.15s"
+          }}>{t}</button>
+        ))}
+        <div style={{ width: 1, height: 18, background: "var(--border)", margin: "0 4px" }} />
+        {["ALL", "EVAL", "FUNDED"].map(c => (
+          <button key={c} onClick={() => setCatFilter(c)} style={{
+            ...MONO, fontSize: 10, padding: "6px 14px", borderRadius: 2,
+            border: "1px solid " + (catFilter === c ? "var(--red)" : "var(--border)"),
+            background: catFilter === c ? "var(--red-bg)" : "var(--bg2)",
+            color: catFilter === c ? "var(--red)" : "var(--text3)", letterSpacing: "0.05em", transition: "all 0.15s"
+          }}>{c}</button>
+        ))}
+      </div>
+
+      {/* Table */}
+      {filtered.length === 0 ? (
+        <div style={{ color: "var(--text3)", fontSize: 13, padding: "40px 0", textAlign: "center", background: "var(--bg1)", border: "1px solid var(--border)" }}>No failed accounts found.</div>
+      ) : (
+        <div style={{ background: "var(--bg1)", border: "1px solid var(--border)", overflow: "hidden" }}>
+          <table style={{ width: "100%" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                {["Account ID", "Trader", "Type", "Category", "Size", "P&L", "Drawdown", "Max DD", "Purchased"].map(h => (
+                  <th key={h} style={{ ...MONO, fontSize: 9, color: "var(--text3)", padding: "11px 14px", textAlign: "left", letterSpacing: "0.06em", fontWeight: 400, whiteSpace: "nowrap" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((a, i) => (
+                <tr key={a.id + "-" + i} className="hover-row" style={{ borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none" }}>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text2)", padding: "12px 14px" }}>{a.id}</td>
+                  <td style={{ padding: "12px 14px" }}>
+                    <div style={{ fontSize: 12, color: "var(--text)" }}>{a.traderName}</div>
+                    <div style={{ ...MONO, fontSize: 10, color: "var(--text3)" }}>{a.traderEmail}</div>
+                  </td>
+                  <td style={{ padding: "12px 14px" }}><Badge label={a.type} /></td>
+                  <td style={{ padding: "12px 14px" }}><Badge label={a.accountCategory} /></td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--gold)", padding: "12px 14px" }}>${a.size?.toLocaleString()}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--red)", padding: "12px 14px" }}>${Number(a.profit).toLocaleString()}</td>
+                  <td style={{ padding: "12px 14px", minWidth: 100 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ ...MONO, fontSize: 10, color: "var(--red)", minWidth: 50 }}>${Number(a.currentDrawdown).toLocaleString()}</span>
+                      <div style={{ flex: 1 }}><ProgressBar value={a.currentDrawdown} max={a.maxDrawdown} color="var(--red)" height={3} /></div>
+                    </div>
+                  </td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "12px 14px" }}>${Number(a.maxDrawdown).toLocaleString()}</td>
+                  <td style={{ ...MONO, fontSize: 11, color: "var(--text3)", padding: "12px 14px", whiteSpace: "nowrap" }}>{a.purchaseDate}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div style={{ ...MONO, fontSize: 10, color: "var(--text3)", marginTop: 10 }}>Showing {filtered.length} of {allFailed.length} failed accounts</div>
+    </div>
+  );
+}
+
 // ─── MOBILE NAV ───────────────────────────────────────────────────────────────
 const MOBILE_NAV = [
   { id: "overview", label: "Overview", icon: "◈" },
   { id: "reviews", label: "Reviews", icon: "◉" },
   { id: "payouts", label: "Payouts", icon: "◎" },
   { id: "traders", label: "Traders", icon: "◷" },
+  { id: "failed", label: "Failed", icon: "✕" },
   { id: "risk", label: "Risk", icon: "◬" },
   { id: "settings", label: "Settings", icon: "⊕" },
 ];
@@ -1843,7 +1950,7 @@ function MobileBottomNav({ page, setPage }) {
 const PAGE_TITLES = {
   overview: "Overview", reviews: "Challenge Reviews",
   payouts: "Payout Management", traders: "Traders",
-  risk: "Risk Monitor", settings: "Settings",
+  failed: "Failed Accounts", risk: "Risk Monitor", settings: "Settings",
 };
 
 export default function App() {
@@ -1975,6 +2082,7 @@ export default function App() {
               {page === "reviews" && <Reviews />}
               {page === "payouts" && <Payouts />}
               {page === "traders" && <TradersPage />}
+              {page === "failed" && <FailedAccounts />}
               {page === "risk" && <RiskMonitor />}
               {page === "settings" && <Settings />}
             </div>
