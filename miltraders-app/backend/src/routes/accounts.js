@@ -142,6 +142,27 @@ router.post("/:id/dismiss", auth, async (req, res) => {
   }
 });
 
+// POST /api/accounts/dismiss-all — dismiss all pending reviews at once
+router.post("/dismiss-all", auth, async (req, res) => {
+  try {
+    const result = await db.query(
+      `UPDATE accounts SET review_status = 'DISMISSED', reviewed_at = NOW(), review_notes = 'Bulk dismissed', updated_at = NOW()
+       WHERE review_status = 'PENDING_REVIEW' AND account_category = 'EVAL'
+       RETURNING id`
+    );
+    const count = result.rowCount;
+
+    await db.query(
+      "INSERT INTO audit_log (admin_id, action, entity_type, entity_id, details) VALUES ($1,$2,$3,$4,$5)",
+      [req.admin.id, "DISMISS_ALL_REVIEWS", "account", null, JSON.stringify({ count, note: "Bulk dismiss" })]
+    );
+
+    res.json({ success: true, message: `${count} reviews dismissed` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // POST /api/accounts/sync — manual sync trigger
 router.post("/sync", auth, async (req, res) => {
   try {

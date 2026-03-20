@@ -48,6 +48,11 @@ async function syncAccounts() {
       const profit = currentBalance - startBal;
       const currentDrawdown = Math.max(0, startBal - currentBalance);
 
+      // Compute qualifying days from creation date
+      const creationDate = acc.creationDate ? new Date(acc.creationDate) : new Date();
+      const now = new Date();
+      const qualifyingDays = Math.max(0, Math.floor((now - creationDate) / (1000 * 60 * 60 * 24)));
+
       // Compute review_status in JS to avoid SQL type conflicts
       const initialReviewStatus = (status === "PASSED" && profitTarget !== null && profit >= profitTarget && profitTarget > 0)
         ? "PENDING_REVIEW" : null;
@@ -80,9 +85,9 @@ async function syncAccounts() {
           balance, equity, profit, profit_target, current_drawdown, max_drawdown,
           daily_limit, consistency_threshold, contracts_max, min_daily_gain,
           first_payout_target, buffer_lock, latent_loss_limit, account_category,
-          review_status, purchase_date, updated_at
+          review_status, purchase_date, qualifying_days, updated_at
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,NOW())
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,NOW())
         ON CONFLICT (volumetrica_account_id) DO UPDATE SET
           trader_id = EXCLUDED.trader_id,
           type = EXCLUDED.type,
@@ -94,6 +99,7 @@ async function syncAccounts() {
           current_drawdown = EXCLUDED.current_drawdown,
           account_category = EXCLUDED.account_category,
           account_ref = EXCLUDED.account_ref,
+          qualifying_days = EXCLUDED.qualifying_days,
           review_status = CASE
             WHEN EXCLUDED.status = 'PASSED' AND EXCLUDED.profit >= EXCLUDED.profit_target AND EXCLUDED.profit_target > 0 AND accounts.review_status IS NULL THEN 'PENDING_REVIEW'
             WHEN EXCLUDED.status != 'PASSED' AND accounts.review_status = 'PENDING_REVIEW' THEN NULL
@@ -123,6 +129,7 @@ async function syncAccounts() {
         category,                                // $20 account_category
         initialReviewStatus,                     // $21 review_status (computed in JS)
         acc.creationDate || new Date(),          // $22 purchase_date
+        Number(qualifyingDays),                  // $23 qualifying_days
       ]);
 
     } catch (err) {

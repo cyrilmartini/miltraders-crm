@@ -40,6 +40,7 @@ export const accounts = {
   validate: (id, data) => api.post(`/accounts/${id}/validate`, data),
   refuse: (id, data) => api.post(`/accounts/${id}/refuse`, data),
   dismiss: (id, data) => api.post(`/accounts/${id}/dismiss`, data),
+  dismissAll: () => api.post('/accounts/dismiss-all'),
   sync: () => api.post('/accounts/sync'),
 }
 
