@@ -15,47 +15,47 @@ const PAYOUT_CAPS = {
 };
 
 async function syncAccounts() {
-  // 1. Fetch all accounts from Volumetrica
   const volAccounts = await vol.getTradingAccounts();
-  if (!volAccounts || !Array.isArray(volAccounts)) return;
+  if (!volAccounts || !Array.isArray(volAccounts)) {
+    console.log("[SYNC] No accounts array returned:", typeof volAccounts);
+    return;
+  }
 
   for (const acc of volAccounts) {
     try {
-      // 2. Detect type and size
-      const type = vol.detectAccountType(acc);
-      const size = vol.detectAccountSize(acc.initialBalance || acc.balance || 50000);
+      const type = detectTypeFromRule(acc.rule || acc.description || acc.header || "");
+      const size = vol.detectAccountSize(acc.startBalance || acc.balance || 50000);
       const rules = RULES[size] || RULES[50000];
       const status = vol.mapAccountStatus(acc.status);
 
-      // 3. Determine category
       let category = "EVAL";
       if (type === "INSTANT") category = "INSTANT";
-      else if (status === "FUNDED") category = "FUNDED";
+      else if (status === "FUNDED" || acc.mode === 2) category = "FUNDED";
+      else if (acc.mode === 1) category = "SIM_FUNDED";
 
       const consistencyThreshold = type === "INSTANT" ? 20 : 30;
       const profitTarget = category === "EVAL" ? rules.profitTarget : null;
       const currentBalance = acc.balance || size;
-      const profit = currentBalance - size;
-      const currentDrawdown = Math.max(0, size - Math.min(currentBalance, acc.equity || currentBalance));
+      const startBal = acc.startBalance || size;
+      const profit = currentBalance - startBal;
+      const currentDrawdown = Math.max(0, startBal - currentBalance);
 
-      // 4. Upsert trader
+      const userId = acc.ownerAppUserId || acc.ownerUser?.userId || acc.ownerOrganizationUserId || "unknown";
+      const userEmail = acc.ownerUser?.email || acc.ownerUser?.username || "";
+      const userName = acc.ownerUser?.fullName || "Unknown Trader";
+
       const traderRes = await db.query(`
         INSERT INTO traders (volumetrica_user_id, email, name, updated_at)
         VALUES ($1, $2, $3, NOW())
         ON CONFLICT (volumetrica_user_id) DO UPDATE SET
-          email = EXCLUDED.email,
-          name = EXCLUDED.name,
+          email = COALESCE(NULLIF(EXCLUDED.email, ''), traders.email),
+          name = CASE WHEN EXCLUDED.name = 'Unknown Trader' THEN traders.name ELSE EXCLUDED.name END,
           updated_at = NOW()
         RETURNING id
-      `, [
-        String(acc.userId || acc.user?.id || "unknown"),
-        acc.user?.email || acc.userEmail || "",
-        acc.user ? `${acc.user.name || ""} ${acc.user.surname || ""}`.trim() : "Unknown Trader",
-      ]);
+      `, [String(userId), userEmail, userName]);
 
       const traderId = traderRes.rows[0].id;
 
-      // 5. Upsert account
       await db.query(`
         INSERT INTO accounts (
           volumetrica_account_id, trader_id, account_ref, type, size, status,
@@ -66,43 +66,31 @@ async function syncAccounts() {
         )
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,NOW())
         ON CONFLICT (volumetrica_account_id) DO UPDATE SET
-          status = EXCLUDED.status,
-          balance = EXCLUDED.balance,
-          equity = EXCLUDED.equity,
-          profit = EXCLUDED.profit,
+          status = EXCLUDED.status, balance = EXCLUDED.balance,
+          equity = EXCLUDED.equity, profit = EXCLUDED.profit,
           current_drawdown = EXCLUDED.current_drawdown,
-          account_category = EXCLUDED.account_category,
-          updated_at = NOW()
+          account_category = EXCLUDED.account_category, updated_at = NOW()
       `, [
-        String(acc.accountId || acc.id),
-        traderId,
-        acc.header || acc.accountId,
-        type,
-        size,
-        status,
-        currentBalance,
-        acc.equity || currentBalance,
-        profit,
-        profitTarget,
-        currentDrawdown,
-        rules.maxDrawdown,
-        type === "INSTANT" ? rules.dailyLimit : null,
-        consistencyThreshold,
-        rules.contractsMax,
-        rules.minDailyGain,
-        rules.profitTarget,
-        category === "FUNDED" ? rules.bufferLock : null,
-        rules.latentLossLimit,
-        category,
-        acc.createdAt || new Date(),
+        String(acc.accountId || acc.id), traderId, acc.header || acc.accountId,
+        type, size, status, currentBalance, currentBalance, profit, profitTarget,
+        currentDrawdown, rules.maxDrawdown,
+        type === "INSTANT" ? rules.dailyLimit : null, consistencyThreshold,
+        rules.contractsMax, rules.minDailyGain, rules.profitTarget,
+        category === "FUNDED" ? rules.bufferLock : null, rules.latentLossLimit,
+        category, acc.creationDate || new Date(),
       ]);
-
     } catch (err) {
-      console.error(`[SYNC] Error syncing account ${acc.accountId}:`, err.message);
+      console.error(`[SYNC] Error syncing account ${acc.accountId || acc.header}:`, err.message);
     }
   }
-
   console.log(`[SYNC] Synced ${volAccounts.length} accounts`);
+}
+
+function detectTypeFromRule(ruleName) {
+  const upper = ruleName.toUpperCase();
+  if (upper.includes("INSTANT")) return "INSTANT";
+  if (upper.includes("PRO")) return "PRO";
+  return "CHALLENGE";
 }
 
 function getPayoutCap(size, withdrawalNumber) {
